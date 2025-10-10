@@ -1,38 +1,66 @@
 package com.myBatuaa.model;
 
-import java.time.LocalDate;
-
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.Email;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+@Entity
+@Table(name="user-records")
+@Data
+@Setter
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor
 public class User {
-
-	/*
-	 * id <PK> : Integer
+/*id <PK> : Integer
+String email
 name: Name
 gender: enum
-nationality: String
-countryCode : String
 mobileNumber : int
-address: Address
-occupation : String
-education : Education
+address: String
 anual_Income: String
-document: Document
-submissionDate : Date Timestamp
-ADMIN/BUYER : enum(Role)*
-	 */
-	@Id
-	private Integer userid;
-	private Name name;
-	private Gender gender;
-	private String nationality;
-	private String countryCode;
-	private Integer mobileNumber;
-	private Address address;
-	private String occupation;
-	private String annualIncome;
-	private LocalDate submmissionDate;
-	private Role role;
+password: String(min 8 -12 digit)
+ADMIN/BUYER : enum(Role)
+ 
+ */
+
+@OneToOne
+@Id
+@GeneratedValue(strategy = GenerationType.IDENTITY)
+private Integer userId;
+
+@Email
+@Column(nullable = false, unique = true)
+private String emailId;
+
+private Name name;
+
+@Enumerated(EnumType.STRING)
+private Gender gender;
+
+@Column(nullable = false, unique = true)
+private String mobileNumber;
+
+private String address;
+
+// ⚠️ Store hashed password only, not plain text
+@Column(nullable = false)
+private String password;
+
+@Enumerated(EnumType.STRING)
+private Role role;
 	
 	
 	

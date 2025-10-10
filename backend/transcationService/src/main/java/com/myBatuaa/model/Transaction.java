@@ -2,18 +2,41 @@ package com.myBatuaa.model;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+
+
 
 public class Transaction {
 	@Id
-private Integer transactionId;
-	private Integer accountNumber;
-	private Integer fromWallet;
-	private Integer toWallet;
-	private  BigDecimal amount;
-	private LocalDate timeStamp;
-	private Status status; // success, processing, failed
-	private String remarks;// please clarify with client what exact meaning of remark
-	
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer transactionId;  // Auto-generated PK
+
+    @ManyToOne
+    @JoinColumn(name = "account_number", referencedColumnName = "accountNumber")
+    private BankAccount account;    // FK to BankAccount
+
+    @ManyToOne
+    @JoinColumn(name = "from_wallet_id", referencedColumnName = "walletId")
+    private Wallet fromWallet;      // FK to source Wallet
+
+    @ManyToOne
+    @JoinColumn(name = "to_wallet_id", referencedColumnName = "walletId")
+    private Wallet toWallet;        // FK to destination Wallet
+
+    private BigDecimal amount;
+
+    private LocalDateTime timestamp; // Full date & time
+
+    @Enumerated(EnumType.STRING)
+    private Status status; // SUCCESS, PROCESSING, FAILED
+
+    private String remarks;
 }
