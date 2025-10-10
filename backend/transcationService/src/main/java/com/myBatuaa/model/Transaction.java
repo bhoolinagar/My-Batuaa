@@ -22,7 +22,6 @@ import lombok.Setter;
 @Entity
 @Table(name = "transaction-records")
 
-@Data
 @Setter
 @Getter
 @AllArgsConstructor

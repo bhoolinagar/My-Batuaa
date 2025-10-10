@@ -1,5 +1,5 @@
 package com.myBatuaa.model;
 
 public enum Role {
-	Admin, Customer
+	Admin, Buyer
 }

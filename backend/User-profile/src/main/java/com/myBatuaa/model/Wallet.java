@@ -17,7 +17,7 @@ import lombok.Setter;
 
 @Entity
 @Table(name="wallet_records")
-@Data
+
 @Setter
 @Getter
 @AllArgsConstructor

@@ -13,7 +13,7 @@ import lombok.Setter;
 
 @Entity
 @Table(name="bank_accounts")
-@Data
+
 @Setter
 @Getter
 @AllArgsConstructor
