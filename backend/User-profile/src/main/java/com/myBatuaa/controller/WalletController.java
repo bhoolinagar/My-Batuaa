@@ -1,5 +1,11 @@
 package com.myBatuaa.controller;
 
+import com.myBatuaa.model.BankAccount;
+import com.myBatuaa.repository.WalletRepository;
+import com.myBatuaa.service.BankService;
+import com.myBatuaa.service.WalletService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -10,23 +16,21 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("wallet/api/v1")
 public class WalletController {
 
-	//BigDecimal getBalance( String walletId)
-	@GetMapping("/get-balance/{walletId}")
-	public ResponseEntity<?> getWalletBalance(String walletId){
-		return null;
-	}
-	
-	//to create wallet
-	@PostMapping("/create-wallet")
-	public ResponseEntity<?> createWallet(String walletId){
-		return null;
-	}	
-	
-	//to add new bank account 
-	@PostMapping("/add-bank-account")
-	public ResponseEntity<?> addBankAcounttoWallet(String walletId){
-			return null;
-		}	
+    @Autowired
+   private WalletService walletService;
+    @Autowired
+   private BankService bankService;
+    //BigDecimal getBalance( String walletId)
+    @GetMapping("/get-wallet-balance/{walletId}")
+    public ResponseEntity<?> getWalletBalance(String walletId){
+        return new ResponseEntity<>(walletService.getWalletBalance(walletId),HttpStatus.OK);
+    }
 
-	
+    //to add new bank account
+    @PostMapping("/add-bank-account")
+    public ResponseEntity<?> linkBankAccountToWallet(String walletId, BankAccount bankAccount){
+        return new ResponseEntity<>(bankService.linkBankAccountToWallet(walletId,bankAccount),HttpStatus.CREATED);
+    }
+
+
 }

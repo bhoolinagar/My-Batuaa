@@ -2,9 +2,7 @@ package com.myBatuaa.model;
 
 import java.math.BigDecimal;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
@@ -19,8 +17,8 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class BankAccount {
-	
-	@Id
+
+    @Id
     private String accountNumber;   // PK (usually string)
 
     private Integer bankId;         // Internal Bank ID (optional, not PK)
@@ -30,5 +28,9 @@ public class BankAccount {
     private String ifscCode;        // IFSC is alphanumeric, so String
 
     private BigDecimal  balance;
+
+    @ManyToOne
+    @JoinColumn(name = "wallet_id")
+    private Wallet wallet;
 
 }
