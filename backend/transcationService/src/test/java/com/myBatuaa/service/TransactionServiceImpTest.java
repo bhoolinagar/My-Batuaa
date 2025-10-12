@@ -2,6 +2,8 @@ package com.myBatuaa.service;
 
 import com.myBatuaa.exception.InsufficientFundsException;
 import com.myBatuaa.exception.WalletNotFoundException;
+import com.myBatuaa.model.BankAccount;
+import com.myBatuaa.repository.BankAccountResposity;
 import org.junit.jupiter.api.Test;
 
 import com.myBatuaa.model.Wallet;
@@ -27,7 +29,8 @@ import static org.junit.jupiter.api.Assertions.*;
 methods required to be tested using Mocked data only, SpringBootTest injecting actual entities hence commented */
 class TransactionServiceTests {
 
-
+    @Mock
+    private BankAccountResposity bankAccountResposity;
     @Mock
     private WalletRepository walletRepository;
 
@@ -57,37 +60,50 @@ class TransactionServiceTests {
     }
     @Test
     void testAddMoney_walletNotFound() {
-        when(walletRepository.findByWalletId("WALLET999")).thenReturn(Optional.empty());
+        BankAccount bankAccount = new BankAccount();
+        bankAccount.setAccountNumber("12345");
+        bankAccount.setWallet(null); // no linked wallet initially for the test check
 
-        WalletNotFoundException exception = assertThrows(WalletNotFoundException.class, () ->
-                transactionService.addMoney("WALLET999", BigDecimal.valueOf(1000))
-        );
-        assertEquals("Wallet not found.", exception.getMessage());
-        verify(walletRepository).findByWalletId("WALLET999");
-        verify(transactionRepository, never()).save(any(Transaction.class));
+        when(bankAccountResposity.findById("12345")).thenReturn(Optional.of(bankAccount));
+
+        WalletNotFoundException ex = assertThrows(WalletNotFoundException.class,
+                () -> transactionService.addMoney("WALLET999", "12345", BigDecimal.valueOf(1000)));
+
+        assertEquals("Wallet not linked to bank account: 12345", ex.getMessage());
+        verify(bankAccountResposity).findById("12345");
+        verify(walletRepository, never()).save(any());
+        verify(transactionRepository, never()).save(any());
     }
+
     @Test
     void testAddMoney_success() {
+        Wallet wallet = new Wallet("WALLET001", null, null, BigDecimal.valueOf(5000), null, null, null);
+        BankAccount bankAccount = new BankAccount("12345", 0, null, null, BigDecimal.valueOf(10000), wallet);
 
-        when(walletRepository.findByWalletId("WALLET001")).thenReturn(Optional.of(walletFrom));
+        when(bankAccountResposity.findById("12345")).thenReturn(Optional.of(bankAccount));
+        when(bankAccountResposity.save(any())).thenReturn(bankAccount);
+        when(walletRepository.save(any())).thenReturn(wallet);
+        when(transactionRepository.save(any())).thenAnswer(i -> {
+            Transaction t = i.getArgument(0);
+            t.setStatus(Status.SUCCESS);
+            t.setRemarks("Money added to wallet WALLET001");
+            return t;
+        });
 
-        Transaction savedTransaction = new Transaction();
-        savedTransaction.setAmount(BigDecimal.valueOf(1000));
-        savedTransaction.setStatus(Status.SUCCESS);
-        savedTransaction.setRemarks("Money added to wallet WALLET001");
-        savedTransaction.setTimestamp(LocalDateTime.now());
-
-        when(transactionRepository.save(any(Transaction.class))).thenReturn(savedTransaction);
-
-        Transaction result = transactionService.addMoney("WALLET001", BigDecimal.valueOf(1000));
+        Transaction result = transactionService.addMoney("WALLET001", "12345", BigDecimal.valueOf(1000));
 
         assertNotNull(result);
         assertEquals(BigDecimal.valueOf(1000), result.getAmount());
         assertEquals(Status.SUCCESS, result.getStatus());
         assertTrue(result.getRemarks().contains("Money added to wallet WALLET001"));
-        verify(walletRepository).findByWalletId("WALLET001");
-        verify(transactionRepository).save(any(Transaction.class));
+
+        verify(bankAccountResposity).findById("12345");
+        verify(bankAccountResposity).save(any());
+        verify(walletRepository).save(any());
+        verify(transactionRepository).save(any());
     }
+
+
     @Test
     void testTransferWalletToWallet_senderNotFound() {
         when(walletRepository.findByWalletId("WALLET999")).thenReturn(Optional.empty());
@@ -100,11 +116,11 @@ class TransactionServiceTests {
         verify(transactionRepository, never()).save(any(Transaction.class));
     }
     @Test
-    void testTransferWalletToWallet_recipientNotFound() {
+    void testTransferWalletToWallet_receiverNotFound() {
         when(walletRepository.findByWalletId("WALLET001")).thenReturn(Optional.of(walletFrom));
         when(walletRepository.findByWalletId("WALLET999")).thenReturn(Optional.empty());
         WalletNotFoundException exception = assertThrows(WalletNotFoundException.class, () -> transactionService.transferWalletToWallet("WALLET001", "WALLET999", BigDecimal.valueOf(1000)));
-        assertEquals("Recipient wallet not foundWALLET999", exception.getMessage());
+        assertEquals("Receiver wallet not foundWALLET999", exception.getMessage());
         verify(walletRepository).findByWalletId("WALLET001");
         verify(walletRepository).findByWalletId("WALLET999");
         verify(walletRepository, never()).save(any(Wallet.class));
@@ -137,6 +153,8 @@ class TransactionServiceTests {
         assertEquals(BigDecimal.valueOf(1000), resultSender.getAmount());
         assertEquals(Status.SUCCESS, resultSender.getStatus());
         assertTrue(resultSender.getRemarks().contains("WALLET002"));
+        assertEquals(walletFrom, resultSender.getFromWallet());
+        assertEquals(walletTo, resultSender.getToWallet());
 
         assertEquals(BigDecimal.valueOf(4000), walletFrom.getBalance());
         assertEquals(BigDecimal.valueOf(4000), walletTo.getBalance());

@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 
 public interface TransactionService {
     //    Add Money to Wallet
-    Transaction addMoney(String walletId, BigDecimal amount);
+    Transaction addMoney(String walletId, String accountNumber, BigDecimal amount);
     //    Transfer money wallet-to-wallet
     Transaction transferWalletToWallet(String walletIdFrom, String walletIdTo, BigDecimal amount);
 

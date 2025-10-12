@@ -55,24 +55,24 @@ class TransactionControllerTest {
     }
     @Test
     void testAddMoneyFromBank_WalletNotFound() {
-        when(transactionService.addMoney("invalidWallet", new BigDecimal("500")))
+        when(transactionService.addMoney("invalidWallet","212121", new BigDecimal("500")))
                 .thenThrow(new WalletNotFoundException("Wallet not found"));
         WalletNotFoundException exception = assertThrows(WalletNotFoundException.class, () ->
-                transactionController.addMoneyFromBank("invalidWallet", "123456", new BigDecimal("500"))
+                transactionController.addMoneyFromBank("invalidWallet", "212121", new BigDecimal("500"))
         );
         assertEquals("Wallet not found", exception.getMessage());
-        verify(transactionService, times(1)).addMoney("invalidWallet", new BigDecimal("500"));
+        verify(transactionService, times(1)).addMoney("invalidWallet","212121", new BigDecimal("500"));
     }
     @Test
     void testAddMoneyFromBank_NegativeAmount() {
-        when(transactionService.addMoney("wallet123", new BigDecimal("-100")))
+        when(transactionService.addMoney("wallet123","123456" ,new BigDecimal("-100")))
                 .thenThrow(new IllegalArgumentException("Check the amount entered"));
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
                 transactionController.addMoneyFromBank("wallet123", "123456", new BigDecimal("-100"))
         );
         assertEquals("Check the amount entered", exception.getMessage());
-        verify(transactionService, times(1)).addMoney("wallet123", new BigDecimal("-100"));
+        verify(transactionService, times(1)).addMoney("wallet123","123456", new BigDecimal("-100"));
     }
     @Test
     void testAddMoneyFromBank_Success() {
@@ -81,12 +81,12 @@ class TransactionControllerTest {
         transaction.setStatus(Status.SUCCESS);
         transaction.setTimestamp(LocalDateTime.now());
 
-        when(transactionService.addMoney("wallet123", new BigDecimal("1000")))
+        when(transactionService.addMoney("wallet123", "123456",new BigDecimal("1000")))
                 .thenReturn(transaction);
         ResponseEntity<?> response = transactionController.addMoneyFromBank("wallet123", "123456", new BigDecimal("1000"));
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertEquals(transaction, response.getBody());
-        verify(transactionService, times(1)).addMoney("wallet123", new BigDecimal("1000"));
+        verify(transactionService, times(1)).addMoney("wallet123","123456", new BigDecimal("1000"));
     }
 
     @Test
