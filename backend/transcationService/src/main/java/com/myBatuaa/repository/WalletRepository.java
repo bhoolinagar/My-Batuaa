@@ -11,9 +11,7 @@ import java.util.Optional;
 
 @Repository
 public interface WalletRepository extends JpaRepository<Wallet, String> {
-    // Locks row in DB to prevent concurrent access, will prevents race conditions on same wallet
-   // @Lock(LockModeType.PESSIMISTIC_WRITE)
-   
+
 	Optional<Wallet> findByWalletId(String walletId);
 
 

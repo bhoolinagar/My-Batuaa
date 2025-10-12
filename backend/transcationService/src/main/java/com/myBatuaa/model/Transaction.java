@@ -20,7 +20,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "transaction-records")
+@Table(name = "transaction_records") // corrected name for proper mapping with db.
 @Setter
 @Getter
 @AllArgsConstructor
