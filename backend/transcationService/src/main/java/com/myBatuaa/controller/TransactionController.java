@@ -47,10 +47,6 @@ public class TransactionController {
         Transaction transaction = transactionService.transferWalletToWallet(walletIdFrom,walletIdTo,amount);
         return new ResponseEntity<>(transaction,HttpStatus.CREATED);
     }
-
-
- 
-
 	//viewTransactionByRemark (based on remark, transactionId)
      @GetMapping("/view-transactions-by-remark")
     public ResponseEntity<?>viewTransactionByRemark(@RequestParam String remark, @RequestParam Integer transactionId){

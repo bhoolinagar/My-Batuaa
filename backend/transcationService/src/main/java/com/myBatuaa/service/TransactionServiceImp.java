@@ -22,7 +22,7 @@ public class TransactionServiceImp implements TransactionService {
 //	@Autowired
     private final TransactionRepository transactionRepository;
     private final WalletRepository walletRepository;
-    @Autowired
+//  @Autowired
     private final BankAccountResposity bankAccountResposity;
 
 
