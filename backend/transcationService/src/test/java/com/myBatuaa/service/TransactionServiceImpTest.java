@@ -48,12 +48,12 @@ class TransactionServiceTests {
         walletFrom = new Wallet();
         walletFrom.setWalletId("WALLET001");
         walletFrom.setBalance(BigDecimal.valueOf(5000));
-        walletFrom.setCreatedAt(LocalDate.now());
+        walletFrom.setCreatedAt(LocalDateTime.now());
 
         walletTo = new Wallet();
         walletTo.setWalletId("WALLET002");
         walletTo.setBalance(BigDecimal.valueOf(3000));
-        walletTo.setCreatedAt(LocalDate.now());
+        walletTo.setCreatedAt(LocalDateTime.now());
     }
     @Test
     void testAddMoney_walletNotFound() {

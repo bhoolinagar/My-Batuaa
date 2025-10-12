@@ -10,6 +10,9 @@ import com.myBatuaa.repository.WalletRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 public class BankServiceImpl  implements BankService{
 
@@ -36,7 +39,17 @@ public class BankServiceImpl  implements BankService{
         // Step 3: Link account to wallet
         account.setWallet(wallet);
 
-        // Step 4: Save and return the linked bank account
+     // Step 4: Add this account to wallet's existing list of accounts
+        List<BankAccount> accounts = wallet.getBankAccounts();
+        if (accounts == null) {
+            accounts = new ArrayList<>();
+        }
+        accounts.add(account);
+        wallet.setBankAccounts(accounts);
+
+        // Step 5: Save wallet (optional if cascade is set) and bank account
+        walletRepository.save(wallet);
+        // Step 6: Save and return the linked bank account
         return bankAccountRepository.save(account);
     }
 

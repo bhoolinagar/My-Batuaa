@@ -11,7 +11,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 
 @Service
-public class WalletServiceImpl extends WalletService {
+public class WalletServiceImpl implements WalletService {
 
     @Autowired
     private WalletRepository walletRepository;

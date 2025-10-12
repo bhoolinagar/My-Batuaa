@@ -1,7 +1,7 @@
 package com.myBatuaa.model;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Entity;
@@ -14,14 +14,13 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
 @Table(name = "transaction-records")
-
 @Setter
 @Getter
 @AllArgsConstructor
@@ -32,15 +31,15 @@ public class Transaction {
     private Integer transactionId;  // Auto-generated PK
 
     @ManyToOne
-    @JoinColumn(name = "account_number", referencedColumnName = "accountNumber")
+    @JoinColumn(name = "account_number", referencedColumnName = "account_number")
     private BankAccount account;    // FK to BankAccount
 
     @ManyToOne
-    @JoinColumn(name = "from_wallet_id", referencedColumnName = "walletId")
+    @JoinColumn(name = "from_wallet_id", referencedColumnName = "wallet_id")
     private Wallet fromWallet;      // FK to source Wallet
 
     @ManyToOne
-    @JoinColumn(name = "to_wallet_id", referencedColumnName = "walletId")
+    @JoinColumn(name = "to_wallet_id", referencedColumnName = "wallet_id")
     private Wallet toWallet;        // FK to destination Wallet
 
     private BigDecimal amount;

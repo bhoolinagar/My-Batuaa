@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 @Service
 public class TransactionServiceImp implements TransactionService{
 
+	@Autowired
     private final TransactionRepository transactionRepository;
     private final WalletRepository walletRepository;
     @Autowired
@@ -73,7 +74,7 @@ public class TransactionServiceImp implements TransactionService{
 //      Sender
         Transaction senderTransaction = new Transaction();
         senderTransaction.setAmount(amount);
-        senderTransaction.setTimestamp(LocalDateTime.now());
+       senderTransaction.setTimestamp(LocalDateTime.now());
         senderTransaction.setStatus(Status.SUCCESS); // To be handled via try catch
         senderTransaction.setRemarks("Transferred Rs" + amount + " to wallet " + walletIdTo);
         transactionRepository.save(senderTransaction);

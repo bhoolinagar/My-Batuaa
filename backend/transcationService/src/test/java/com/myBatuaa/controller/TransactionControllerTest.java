@@ -4,8 +4,9 @@ import com.myBatuaa.exception.InsufficientFundsException;
 import com.myBatuaa.exception.WalletNotFoundException;
 import com.myBatuaa.service.TransactionService;
 import org.junit.jupiter.api.Test;
-import com.myBatuaa.model.Wallet;
+
 import com.myBatuaa.model.Transaction;
+import com.myBatuaa.model.*;
 import com.myBatuaa.model.Status;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.InjectMocks;
@@ -57,7 +58,7 @@ class TransactionControllerTest {
         when(transactionService.addMoney("invalidWallet", new BigDecimal("500")))
                 .thenThrow(new WalletNotFoundException("Wallet not found"));
         WalletNotFoundException exception = assertThrows(WalletNotFoundException.class, () ->
-                transactionController.addMoneyFromBank("invalidWallet", 123456, new BigDecimal("500"))
+                transactionController.addMoneyFromBank("invalidWallet", "123456", new BigDecimal("500"))
         );
         assertEquals("Wallet not found", exception.getMessage());
         verify(transactionService, times(1)).addMoney("invalidWallet", new BigDecimal("500"));
@@ -68,7 +69,7 @@ class TransactionControllerTest {
                 .thenThrow(new IllegalArgumentException("Check the amount entered"));
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
-                transactionController.addMoneyFromBank("wallet123", 123456, new BigDecimal("-100"))
+                transactionController.addMoneyFromBank("wallet123", "123456", new BigDecimal("-100"))
         );
         assertEquals("Check the amount entered", exception.getMessage());
         verify(transactionService, times(1)).addMoney("wallet123", new BigDecimal("-100"));
@@ -82,7 +83,7 @@ class TransactionControllerTest {
 
         when(transactionService.addMoney("wallet123", new BigDecimal("1000")))
                 .thenReturn(transaction);
-        ResponseEntity<?> response = transactionController.addMoneyFromBank("wallet123", 123456, new BigDecimal("1000"));
+        ResponseEntity<?> response = transactionController.addMoneyFromBank("wallet123", "123456", new BigDecimal("1000"));
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertEquals(transaction, response.getBody());
         verify(transactionService, times(1)).addMoney("wallet123", new BigDecimal("1000"));

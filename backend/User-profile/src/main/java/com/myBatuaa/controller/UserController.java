@@ -3,6 +3,8 @@ package com.myBatuaa.controller;
 import com.myBatuaa.model.Role;
 import com.myBatuaa.repository.UserRepository;
 import com.myBatuaa.service.UserService;
+
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -30,8 +32,8 @@ getAccountByUserId(String userId)
     @PostMapping("/register")
 //Register Account(User user)
 //CreateWallet()
-    public ResponseEntity<?> registerUser(@RequestBody User user) {
-        userService.registerUser(user);
+    public ResponseEntity<?> registerUser(@Valid @RequestBody User user) {
+         // userService.registerUser(user);
         return new ResponseEntity<>(userService.registerUser(user), HttpStatus.CREATED);
     }
 

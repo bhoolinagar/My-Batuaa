@@ -19,8 +19,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RestController
 @RequestMapping("transaction/api/v1")
 public class TransactionController {
+	
+	//@Autowired
     private final TransactionService transactionService;
 
+	
     @Autowired
     public TransactionController(TransactionService transactionService){
         this.transactionService = transactionService;
@@ -32,13 +35,12 @@ public class TransactionController {
     return null;
 }
 
-
     /*
-    addMoneyFromBank( String walletId, accountNumber, BigDecimal Amount)
+    addMoneyFromBank( String walletIdto, accountNumber, BigDecimal Amount)
     */
     @PostMapping("/add-money-from-bank")
-    public 	ResponseEntity<?>addMoneyFromBank(@RequestParam String walletId, @RequestParam Integer accountNumber, @RequestParam BigDecimal amount){
-        Transaction transaction = transactionService.addMoney(walletId,amount);
+    public 	ResponseEntity<?>addMoneyFromBank(@RequestParam String walletIdto, @RequestParam String accountNumber, @RequestParam BigDecimal amount){
+        Transaction transaction = transactionService.addMoney(walletIdto, amount);
         return new ResponseEntity<>(transaction, HttpStatus.CREATED);
 
     }
@@ -66,14 +68,14 @@ public class TransactionController {
 	 }
 	
 	//viewHistoryByDate(based on date)
-    @GetMapping("/view-transactions-by-remark/{type}")
+    @GetMapping("/view-transactions-by-date/{type}")
     public ResponseEntity<?>viewTransactionByDate(LocalDateTime date){
 		return null; 
     }
 	
 	
 	//sortingByAmount(based on amount)
-    @GetMapping("/view-transactions-by-remark/{type}")
+    @GetMapping("/view-transactions-by-amount/{type}")
     public ResponseEntity<?>viewTransactionByAmount(BigDecimal amount){
         return null;
 	 }
