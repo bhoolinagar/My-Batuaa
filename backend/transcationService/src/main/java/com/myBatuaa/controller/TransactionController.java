@@ -1,6 +1,7 @@
 package com.myBatuaa.controller;
 
 import com.myBatuaa.model.Transaction;
+import com.myBatuaa.model.Wallet;
 import com.myBatuaa.service.TransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -10,12 +11,17 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import org.springframework.http.ResponseEntity;
+import com.myBatuaa.model.Transaction;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping("transaction/api/v1")
 public class TransactionController {
 
-	//@Autowired
+
     private final TransactionService transactionService;
 
 	
@@ -24,6 +30,7 @@ public class TransactionController {
         this.transactionService = transactionService;
     }
 
+
     //getAllTransactions(String walletId)
     @GetMapping("/all-transactions")
     public ResponseEntity<?> getMethodName(@RequestParam String WalletId) {
@@ -31,14 +38,13 @@ public class TransactionController {
 }
 
     /*
-    addMoneyFromBank( String walletIdto, accountNumber, BigDecimal Amount)
+    addMoneyFromBank( String walletIdto, accountNumber, BigDecimal Amount)  Need to check why is this endpoint is needed
     */
     @PostMapping("/add-money-from-bank")
     public 	ResponseEntity<?> addMoneyFromBank(@RequestParam String walletIdto, @RequestParam String accountNumber, @RequestParam BigDecimal amount){
             Transaction transaction = transactionService.addMoney(walletIdto, accountNumber, amount);
         return new ResponseEntity<>(transaction, HttpStatus.CREATED);
     }
-
 	/*
 	TransferWalletToWallet(walletIdFrom, walletIdTo, BigDecimal Amount)
 	 */
@@ -47,12 +53,13 @@ public class TransactionController {
         Transaction transaction = transactionService.transferWalletToWallet(walletIdFrom,walletIdTo,amount);
         return new ResponseEntity<>(transaction,HttpStatus.CREATED);
     }
+
 	//viewTransactionByRemark (based on remark, transactionId)
-     @GetMapping("/view-transactions-by-remark")
-    public ResponseEntity<?>viewTransactionByRemark(@RequestParam String remark, @RequestParam Integer transactionId){
+    @GetMapping("/view-transactions-by-remark")
+    public ResponseEntity<?>viewTransactionByRemark(@RequestParam String remark, @RequestParam String walletId){
 	    return null;
     }
-	 //viewTransactionByType (based on type)
+	 //viewTransactionByType (based on type) , associate this API with walletId - suggested by
       @GetMapping("/view-transactions-by-type/{type}")
     public ResponseEntity<?>viewTransactionByTypes(String type){
         return null;
@@ -71,5 +78,5 @@ public class TransactionController {
         return null;
 	 }
     //Free bracket calculator-chargeable(amount)
-	
+
 }
