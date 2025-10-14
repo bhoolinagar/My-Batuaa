@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import com.myBatuaa.model.Transaction;
@@ -21,7 +22,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RequestMapping("transaction/api/v1")
 public class TransactionController {
 
-
+    public record TransactionRemarkRequest(
+            String walletId,
+            String remark
+    ) {}
     private final TransactionService transactionService;
 
 	
@@ -38,7 +42,7 @@ public class TransactionController {
 }
 
     /*
-    addMoneyFromBank( String walletIdto, accountNumber, BigDecimal Amount)  Need to check why is this endpoint is needed
+    addMoneyFromBank( String walletIdto, accountNumber, BigDecimal Amount)
     */
     @PostMapping("/add-money-from-bank")
     public 	ResponseEntity<?> addMoneyFromBank(@RequestParam String walletIdto, @RequestParam String accountNumber, @RequestParam BigDecimal amount){
@@ -54,12 +58,15 @@ public class TransactionController {
         return new ResponseEntity<>(transaction,HttpStatus.CREATED);
     }
 
-	//viewTransactionByRemark (based on remark, transactionId)
+	/*
+	viewTransactionByRemark (based on walletId, remark)
+	 */
     @GetMapping("/view-transactions-by-remark")
-    public ResponseEntity<?>viewTransactionByRemark(@RequestParam String remark, @RequestParam String walletId){
-	    return null;
+    public ResponseEntity<?>viewTransactionByRemark(@RequestParam String walletId, @RequestParam String remark){
+        List<Transaction> transactionList = transactionService.filterTransactionsByRemark(walletId, remark);
+        return new ResponseEntity<>(transactionList, HttpStatus.OK);
     }
-	 //viewTransactionByType (based on type) , associate this API with walletId - suggested by
+	 //viewTransactionByType (based on type)
       @GetMapping("/view-transactions-by-type/{type}")
     public ResponseEntity<?>viewTransactionByTypes(String type){
         return null;

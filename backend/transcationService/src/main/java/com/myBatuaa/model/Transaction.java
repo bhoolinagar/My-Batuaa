@@ -21,7 +21,6 @@ import lombok.*;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
 public class Transaction {
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

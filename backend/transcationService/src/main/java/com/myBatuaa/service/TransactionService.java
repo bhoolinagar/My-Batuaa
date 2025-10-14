@@ -11,6 +11,6 @@ public interface TransactionService {
     //    Transfer money wallet-to-wallet
     Transaction transferWalletToWallet(String walletIdFrom, String walletIdTo, BigDecimal amount);
     //   Filter Transactions By Remarks
-//    List<Transaction> filterTransactionsByRemark(String walletId, String remark);
+    List<Transaction> filterTransactionsByRemark(String walletId, String remark);
 
 }
