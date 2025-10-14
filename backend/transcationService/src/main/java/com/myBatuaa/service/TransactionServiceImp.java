@@ -13,6 +13,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
 import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
@@ -32,9 +35,8 @@ public class TransactionServiceImp implements TransactionService {
     }
     /*
        Functional Purpose:  Transaction Getting Recorded, Once Money Is Added To The Wallet
-       Transaction object creation | Currently tight coupling, post MVP loose coupling logic will be handled
-       (Status to be handled using try catch logic once the integrated logic is checked)
-    (Transactional will ensure atomicity: if any exception will occur, both wallets and transaction rollback.)
+       Transaction object creation.Transactional will ensure atomicity: if any exception will occur,
+       both wallets and transaction rollback.
      */
     @Transactional
     @Override
@@ -135,10 +137,36 @@ public class TransactionServiceImp implements TransactionService {
             throw new UnableToAddMoneyException("Error occurred", e);
         }
     }
-
     /*
-     Functional Purpose: Filter Transactions On Basis Of Remark
+    Functional Purpose: Filter Transactions On Basis Of Remark
     */
+    @Override
+    public List<Transaction> filterTransactionsByRemark(String walletId, String remark) {
+        try {
+            Wallet wallet = Optional.ofNullable(walletId).filter(id -> !id.isBlank())
+                    .flatMap(id -> walletRepository.findByWalletId(id))
+                    .orElseThrow(()-> new WalletNotFoundException("Wallet Not Found or is invalid"));
+
+            String key = Optional.ofNullable(remark).orElse("");
+            List<Transaction> transactions = transactionRepository.findByWalletAndRemarkContainingIgnoreCase(wallet.getWalletId(), key);
+
+            if(transactions.isEmpty() && !key.isBlank()){
+                log.warn("No transaction is there for wallet {} with remark '{}' ", walletId, key);
+                throw new TransactionNotFoundException("No transaction found for wallet "+ walletId + "with remark: "+ key);
+            }
+
+            log.info("Filtered {} transactions for wallet {} with remark containing '{}'", transactions.size(), walletId, key);
+            return transactions;
+
+        } catch (WalletNotFoundException e) {
+            log.error("Wallet Not Found or Invalid: {}", walletId, e);
+            throw e;
+        }catch(Exception e){
+            log.error("Error occurred while filteringtransactions for wallet {} with remark'{}': {} ", walletId, remark, e.getMessage(), e);
+            throw new ErrorOccurredUnableToFilterByRemarkException("Error occurred while filtering by remarks");
+        }
+
+    }
 
 
 }

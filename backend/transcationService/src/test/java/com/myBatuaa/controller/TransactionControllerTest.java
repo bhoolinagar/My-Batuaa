@@ -1,8 +1,6 @@
 package com.myBatuaa.controller;
 
-import com.myBatuaa.exception.AmountCanNotBeNullException;
-import com.myBatuaa.exception.InsufficientFundsException;
-import com.myBatuaa.exception.WalletNotFoundException;
+import com.myBatuaa.exception.*;
 import com.myBatuaa.service.TransactionService;
 import org.junit.jupiter.api.Test;
 
@@ -17,6 +15,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
+
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -112,8 +112,8 @@ class TransactionControllerTest {
     void testTransferMoneyWalletToWallet_InsufficientFunds() {
         when(transactionService.transferWalletToWallet("wallet123", "wallet456", new BigDecimal("5000")))
                 .thenThrow(new InsufficientFundsException("Insufficient funds"));
-        InsufficientFundsException exception = assertThrows(InsufficientFundsException.class, () ->
-                transactionController.transferMoneywalletToWallet("wallet123", "wallet456", new BigDecimal("5000"))
+        InsufficientFundsException exception = assertThrows(InsufficientFundsException.class,
+                () -> transactionController.transferMoneywalletToWallet("wallet123", "wallet456", new BigDecimal("5000"))
         );
         assertEquals("Insufficient funds", exception.getMessage());
         verify(transactionService, times(1)).transferWalletToWallet("wallet123", "wallet456", new BigDecimal("5000"));
@@ -136,4 +136,51 @@ class TransactionControllerTest {
         assertEquals(senderTransaction, response.getBody());
         verify(transactionService, times(1)).transferWalletToWallet("wallet123", "wallet456", new BigDecimal("200"));
     }
+
+    @Test
+    void testViewTransactionByRemark_NoTransactionsFound() {
+        String walletId = "wallet123", remark = "nonexistent";
+        when(transactionService.filterTransactionsByRemark(walletId, remark))
+                .thenThrow(new TransactionNotFoundException("No transaction found"));
+
+        var ex = assertThrows(TransactionNotFoundException.class,
+                () -> transactionController.viewTransactionByRemark(walletId, remark));
+
+        assertEquals("No transaction found", ex.getMessage());
+    }
+    @Test
+    void testViewTransactionByRemark_UnableToFilterError() {
+        String walletId = "wallet123", remark = "refund";
+        when(transactionService.filterTransactionsByRemark(walletId, remark))
+                .thenThrow(new ErrorOccurredUnableToFilterByRemarkException("Error filtering"));
+
+        var ex = assertThrows(ErrorOccurredUnableToFilterByRemarkException.class,
+                () -> transactionController.viewTransactionByRemark(walletId, remark));
+
+        assertEquals("Error filtering", ex.getMessage());
+    }
+    @Test
+    void testViewTransactionByRemark_WalletNotFound() {
+        String walletId = "inval", remark = "payment";
+        when(transactionService.filterTransactionsByRemark(walletId, remark)).thenThrow(new WalletNotFoundException("Wallet Not Found or is invalid"));
+
+        WalletNotFoundException exception = assertThrows(WalletNotFoundException.class, () ->
+                transactionController.viewTransactionByRemark(walletId, remark));
+
+        assertEquals("Wallet Not Found or is invalid", exception.getMessage());
+    }
+    @Test
+    void testViewTransactionByRemark_Success(){
+        String walletId = "wallet123", remark = "transfer";
+        Transaction testTransaction = new Transaction();
+        testTransaction.setRemarks("Transfer to");
+        when(transactionService.filterTransactionsByRemark(walletId, remark))
+                .thenReturn(List.of(testTransaction));
+        ResponseEntity<?> response = transactionController.viewTransactionByRemark(walletId,remark);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(1, ((List<?>) response.getBody()).size());
+    }
+
+
 }

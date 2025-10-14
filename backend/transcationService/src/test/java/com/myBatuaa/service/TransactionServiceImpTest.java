@@ -1,8 +1,6 @@
 package com.myBatuaa.service;
 
-import com.myBatuaa.exception.AmountCanNotBeNullException;
-import com.myBatuaa.exception.InsufficientFundsException;
-import com.myBatuaa.exception.WalletNotFoundException;
+import com.myBatuaa.exception.*;
 import com.myBatuaa.model.BankAccount;
 import com.myBatuaa.repository.BankAccountResposity;
 import org.junit.jupiter.api.Test;
@@ -20,6 +18,7 @@ import org.mockito.MockitoAnnotations;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.Mockito.*;
@@ -198,5 +197,74 @@ class TransactionServiceTests {
         verify(walletRepository, times(2)).save(any(Wallet.class));
         verify(transactionRepository, times(2)).save(any(Transaction.class));
     }
+
+    @Test
+    void testFilterTransactionsByRemark_success(){
+        String walletId = "WALLET001";
+        String remark = "transferred";
+        Transaction testTransaction = new Transaction();
+        testTransaction.setRemarks("Transferred");
+        testTransaction.setFromWallet(walletFrom);
+        testTransaction.setToWallet(walletTo);
+        when(walletRepository.findByWalletId(walletId)).thenReturn(Optional.of(walletFrom));
+        when(transactionRepository.findByWalletAndRemarkContainingIgnoreCase(walletId,remark))
+                .thenReturn(List.of(testTransaction));
+        List<Transaction> result = transactionService.filterTransactionsByRemark(walletId,remark);
+        assertNotNull(result);
+        assertEquals(1,result.size());
+        assertTrue(result.get(0).getRemarks().toLowerCase().contains(remark.toLowerCase()));
+
+        verify(walletRepository).findByWalletId(walletId);
+        verify(transactionRepository).findByWalletAndRemarkContainingIgnoreCase(walletId,remark);
+    }
+
+    @Test
+    void testFilterTransactionsByRemark_noTransactionsFound() {
+
+        String walletId = "WALLET001";
+        String remark = "nonexistent";
+
+        when(walletRepository.findByWalletId(walletId)).thenReturn(Optional.of(walletFrom));
+        when(transactionRepository.findByWalletAndRemarkContainingIgnoreCase(walletId, remark))
+                .thenReturn(List.of());
+
+
+        ErrorOccurredUnableToFilterByRemarkException ex = assertThrows(ErrorOccurredUnableToFilterByRemarkException.class,
+                () -> transactionService.filterTransactionsByRemark(walletId, remark)
+        );
+        assertEquals("Error occurred while filtering by remarks", ex.getMessage());
+
+        verify(walletRepository).findByWalletId(walletId);
+        verify(transactionRepository).findByWalletAndRemarkContainingIgnoreCase(walletId, remark);
+    }
+
+    @Test
+    void testFilterTransactionsByRemark_emptyRemark_returnsAllTransactions() {
+        String walletId = "WALLET001";
+        String remark = "";
+        Transaction testTransaction = new Transaction();
+        testTransaction.setRemarks("Payment received");
+        when(walletRepository.findByWalletId(walletId)).thenReturn(Optional.of(walletFrom));
+        when(transactionRepository.findByWalletAndRemarkContainingIgnoreCase(walletId, ""))
+                .thenReturn(List.of(testTransaction));
+        List<Transaction> result = transactionService.filterTransactionsByRemark(walletId, remark);
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        verify(walletRepository).findByWalletId(walletId);
+        verify(transactionRepository).findByWalletAndRemarkContainingIgnoreCase(walletId, "");
+    }
+    @Test
+    void testFilterTransactionsByRemark_walletIdNullOrBlank() {
+        String walletId = "";
+        String remark = "payment";
+
+        WalletNotFoundException ex = assertThrows(WalletNotFoundException.class, () -> transactionService.filterTransactionsByRemark(walletId, remark));
+
+        assertEquals("Wallet Not Found or is invalid", ex.getMessage());
+
+        verify(walletRepository, never()).findByWalletId(any());
+        verify(transactionRepository, never()).findByWalletAndRemarkContainingIgnoreCase(any(),any());
+    }
+
 
 }
