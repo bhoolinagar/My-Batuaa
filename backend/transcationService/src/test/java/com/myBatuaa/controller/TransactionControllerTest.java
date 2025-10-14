@@ -1,5 +1,6 @@
 package com.myBatuaa.controller;
 
+import com.myBatuaa.exception.AmountCanNotBeNullException;
 import com.myBatuaa.exception.InsufficientFundsException;
 import com.myBatuaa.exception.WalletNotFoundException;
 import com.myBatuaa.service.TransactionService;
@@ -20,7 +21,6 @@ import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 
-
 class TransactionControllerTest {
     @Mock
     private TransactionService transactionService;
@@ -39,12 +39,10 @@ class TransactionControllerTest {
         walletFrom = new Wallet();
         walletFrom.setWalletId("wallet123");
         walletFrom.setBalance(new BigDecimal("1000"));
-
         walletTo = new Wallet();
         walletTo.setWalletId("wallet456");
         walletTo.setBalance(new BigDecimal("500"));
 
-        // Sample sender transaction returned by service
         senderTransaction = new Transaction();
         senderTransaction.setFromWallet(walletFrom);
         senderTransaction.setToWallet(walletTo);
@@ -53,6 +51,18 @@ class TransactionControllerTest {
         senderTransaction.setTimestamp(LocalDateTime.now());
         senderTransaction.setRemarks("Transferred Rs200 to wallet wallet456");
     }
+    @Test
+    void testAddMoneyFromBank_AmountNull() {
+        when(transactionService.addMoney("wallet123","123456", null))
+                .thenThrow(new AmountCanNotBeNullException("Amount Should Not Be Null"));
+
+        AmountCanNotBeNullException exception = assertThrows(AmountCanNotBeNullException.class, () ->
+                transactionController.addMoneyFromBank("wallet123", "123456", null)
+        );
+        assertEquals("Amount Should Not Be Null", exception.getMessage());
+        verify(transactionService, times(1)).addMoney("wallet123","123456", null);
+    }
+
     @Test
     void testAddMoneyFromBank_WalletNotFound() {
         when(transactionService.addMoney("invalidWallet","212121", new BigDecimal("500")))
@@ -88,7 +98,16 @@ class TransactionControllerTest {
         assertEquals(transaction, response.getBody());
         verify(transactionService, times(1)).addMoney("wallet123","123456", new BigDecimal("1000"));
     }
-
+    @Test
+    void testTransferMoneyWalletToWallet_AmountNull() {
+        when(transactionService.transferWalletToWallet("wallet123", "wallet456", null))
+                .thenThrow(new AmountCanNotBeNullException("Amount Should Not Be Null"));
+        AmountCanNotBeNullException exception = assertThrows(AmountCanNotBeNullException.class, () ->
+                transactionController.transferMoneywalletToWallet("wallet123", "wallet456", null)
+        );
+        assertEquals("Amount Should Not Be Null", exception.getMessage());
+        verify(transactionService, times(1)).transferWalletToWallet("wallet123", "wallet456", null);
+    }
     @Test
     void testTransferMoneyWalletToWallet_InsufficientFunds() {
         when(transactionService.transferWalletToWallet("wallet123", "wallet456", new BigDecimal("5000")))
