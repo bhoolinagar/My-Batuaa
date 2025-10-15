@@ -1,0 +1,71 @@
+Subject: [PATCH] abd
+---
+Index: backend/transcationService/src/main/java/com/mybatuaa/model/Wallet.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/backend/transcationService/src/main/java/com/mybatuaa/model/Wallet.java b/backend/transcationService/src/main/java/com/mybatuaa/model/Wallet.java
+--- a/backend/transcationService/src/main/java/com/mybatuaa/model/Wallet.java	(revision c490561b8f2830808d7e26c107c42a1555be7dcf)
++++ b/backend/transcationService/src/main/java/com/mybatuaa/model/Wallet.java	(date 1760506808838)
+@@ -35,14 +35,14 @@
+ 	private LocalDateTime createdAt;
+ 	private BigDecimal balance;
+ 
+-	//@OneToMany(mappedBy = "wallet", cascade = CascadeType.ALL)
++	@OneToMany(mappedBy = "wallet", cascade = CascadeType.ALL)
+ 	private List<BankAccount> bankAccounts;
+ 	// One wallet → many sent transactions
+-	//@OneToMany(mappedBy = "fromWallet", cascade = CascadeType.ALL, orphanRemoval = true)
++	@OneToMany(mappedBy = "fromWallet", cascade = CascadeType.ALL, orphanRemoval = true)
+ 	private List<Transaction> sentTransactions = new ArrayList<>();
+ 
+ 	//One wallet → many received transactions
+-	//@OneToMany(mappedBy = "toWallet", cascade = CascadeType.ALL, orphanRemoval = true)
++	@OneToMany(mappedBy = "toWallet", cascade = CascadeType.ALL, orphanRemoval = true)
+ 	private List<Transaction> receivedTransactions = new ArrayList<>();
+ 
+ 	//Combine both sent + received transactions
+Index: backend/transcationService/src/main/java/com/mybatuaa/model/BankAccount.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/backend/transcationService/src/main/java/com/mybatuaa/model/BankAccount.java b/backend/transcationService/src/main/java/com/mybatuaa/model/BankAccount.java
+--- a/backend/transcationService/src/main/java/com/mybatuaa/model/BankAccount.java	(revision c490561b8f2830808d7e26c107c42a1555be7dcf)
++++ b/backend/transcationService/src/main/java/com/mybatuaa/model/BankAccount.java	(date 1760506326667)
+@@ -11,7 +11,6 @@
+ 
+ @Entity
+ @Table(name="bank_accounts")
+-
+ public class BankAccount {
+ 
+ 	@Id
+Index: backend/transcationService/src/main/java/com/mybatuaa/model/Transaction.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/backend/transcationService/src/main/java/com/mybatuaa/model/Transaction.java b/backend/transcationService/src/main/java/com/mybatuaa/model/Transaction.java
+--- a/backend/transcationService/src/main/java/com/mybatuaa/model/Transaction.java	(revision c490561b8f2830808d7e26c107c42a1555be7dcf)
++++ b/backend/transcationService/src/main/java/com/mybatuaa/model/Transaction.java	(date 1760506575229)
+@@ -23,15 +23,15 @@
+     @GeneratedValue(strategy = GenerationType.IDENTITY)
+     private Integer transactionId;  // Auto-generated PK
+ 
+-  //  @ManyToOne
++    @ManyToOne
+     @JoinColumn(name = "account_number", referencedColumnName = "account_number")
+     private BankAccount account;    // FK to BankAccount
+ 
+-   // @ManyToOne
++    @ManyToOne
+     @JoinColumn(name = "from_wallet_id", referencedColumnName = "wallet_id")
+     private Wallet fromWallet;      // FK to source Wallet
+ 
+-   // @ManyToOne
++    @ManyToOne
+     @JoinColumn(name = "to_wallet_id", referencedColumnName = "wallet_id")
+     private Wallet toWallet;        // FK to destination Wallet
+ 
