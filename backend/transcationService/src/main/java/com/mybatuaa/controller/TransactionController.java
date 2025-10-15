@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+import com.mybatuaa.exception.WalletNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -38,8 +39,30 @@ public class TransactionController {
 	// getAllTransactions(String walletId)
 	@GetMapping("/all-transactions")
 	public ResponseEntity<?> getAllTransaction(@RequestParam String walletId) {
-		return null;
-	}
+        try {
+            log.info("Request received to fetch all transactions for walletId={}", walletId);
+            List<Transaction> transactions = transactionService.getAllTransactions(walletId);
+
+            if (transactions.isEmpty()) {
+                log.warn("No transactions found for walletId={}", walletId);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("No transactions found for walletId: " + walletId);
+            }
+
+            return ResponseEntity.ok(transactions);
+
+        } catch (WalletNotFoundException e) {
+            log.error("Wallet not found: {}", walletId, e);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+
+        } catch (RuntimeException e) {
+            log.error("Failed to fetch transactions for walletId={}", walletId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error fetching transactions. Please try again later.");
+        }
+
+    }
+
 
 	/*
 	 * addMoneyFromBank( String walletIdto, accountNumber, BigDecimal Amount)
@@ -104,7 +127,6 @@ public class TransactionController {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
 		}
 	}
-
 	// sortingByAmount(based on amount)
 	@GetMapping("/view-transactions-by-amount/{amount}")
 	public ResponseEntity<?> viewTransactionByAmount(BigDecimal amount) {

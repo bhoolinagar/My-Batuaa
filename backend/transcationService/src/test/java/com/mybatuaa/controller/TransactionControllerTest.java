@@ -1,5 +1,6 @@
 package com.mybatuaa.controller;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -15,9 +16,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -29,6 +32,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.mybatuaa.exception.AmountCanNotBeNullException;
@@ -59,7 +64,7 @@ class TransactionControllerTest {
 	// for translations
 	private Transaction txn1;
 	private Transaction txn2;
-
+    List<Transaction> transactionList;
 	@BeforeEach
 	void setUp() {
 		MockitoAnnotations.openMocks(this);
@@ -95,7 +100,10 @@ class TransactionControllerTest {
 		txn2.setStatus(Status.SUCCESS);
 		txn2.setAmount(BigDecimal.valueOf(500));
 		txn2.setTimestamp(LocalDateTime.of(2025, 10, 9, 9, 0));
-	}
+
+        transactionList = new ArrayList<>();
+        transactionList.add(senderTransaction);
+    }
 
 	@Test
 	void testAddMoneyFromBank_AmountNull() {
@@ -330,5 +338,57 @@ class TransactionControllerTest {
 				.param("type", "INVALID_TYPE").contentType(MediaType.APPLICATION_JSON))
 		.andExpect(status().isBadRequest());
 	}
+
+    @Test
+    public void givenGetAllTransactionsForWalletIdThenShouldReturnListOfAllTransactionsForWalletId() throws Exception {
+transactionList.add(senderTransaction);
+
+        // Mock the service
+        when(transactionService.getAllTransactions("wallet123")).thenReturn(transactionList);
+transactionList.add(txn1);
+        // When & Then
+        mockMvc.perform(MockMvcRequestBuilders
+                        .get("/transaction/api/v1/all-transactions")
+                        .param("walletId", "wallet123")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].transactionId").value(3))
+                .andExpect(jsonPath("$[1].transactionId").value(1));
+
+        verify(transactionService, times(1)).getAllTransactions("wallet123");
+    }
+
+    @Test
+    void testGetAllTransactions_WalletNotFound() throws Exception {
+        String walletId = "invalidWallet";
+
+        when(transactionService.getAllTransactions(walletId))
+                .thenThrow(new WalletNotFoundException("Wallet not found with ID: " + walletId));
+
+        mockMvc.perform(get("/transaction/api/v1/all-transactions")
+                        .param("walletId", walletId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("Wallet not found with ID: " + walletId));
+
+        verify(transactionService, times(1)).getAllTransactions(walletId);
+    }
+
+    @Test
+    void testGetAllTransactions_NoTransactionsFound() throws Exception {
+        String walletId = "wallet123";
+
+        when(transactionService.getAllTransactions(walletId)).thenReturn(new ArrayList<>());
+
+        mockMvc.perform(get("/transaction/api/v1/all-transactions")
+                        .param("walletId", walletId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("No transactions found for walletId: " + walletId));
+
+        verify(transactionService, times(1)).getAllTransactions(walletId);
+    }
 
 }

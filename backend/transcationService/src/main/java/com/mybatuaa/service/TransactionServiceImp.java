@@ -213,9 +213,8 @@ public class TransactionServiceImp implements TransactionService {
 			List<Transaction> transactions = transactionRepository
 					.findByFromWallet_WalletIdOrToWallet_WalletIdAndTimestampBetween(walletId, walletId, startOfDay,
 							endOfDay);
-            List<Transaction> transactionList = transactions.stream().sorted(Comparator.comparing(Transaction::getTimestamp))
+            return transactions.stream().sorted(Comparator.comparing(Transaction::getTimestamp))
                     .collect(Collectors.toList());
-            return transactionList;
 		} catch (WalletNotFoundException | DateTimeException e) {
 			log.error("Wallet not found or start and end date should be before or equal to the current date");
 			throw e; // Let upper layers handle known exceptions
@@ -244,7 +243,14 @@ public class TransactionServiceImp implements TransactionService {
 
     @Override
     public List<Transaction> getAllTransactions(String walletId) {
-        return transactionRepository.findByFromWallet_WalletIdOrToWallet_WalletId(walletId);
+        // Check if wallet exists
+        if (!walletRepository.existsById(walletId)) {
+            log.error("Wallet not found with ID={}", walletId);
+            throw new WalletNotFoundException("Wallet not found with ID: " + walletId);
+        }
 
+        log.info("Fetching transactions for walletId={}", walletId);
+        return transactionRepository.findByFromWallet_WalletIdOrToWallet_WalletId(walletId,walletId);
     }
+
 }

@@ -16,11 +16,9 @@ import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -42,6 +40,7 @@ import com.mybatuaa.repository.WalletRepository;
 
 /* @SpringBootTest(classes = TransactionServiceApplicationTests.class) | once integrated will modify as needed commenting because
 methods required to be tested using Mocked data only, SpringBootTest injecting actual entities hence commented */
+@Slf4j
 class TransactionServiceTests {
 
 	@Mock
@@ -63,6 +62,8 @@ class TransactionServiceTests {
 	// for translations
 	private Transaction txn1;
 	private Transaction txn2;
+    private Transaction transaction;
+    private List<Transaction> transactionList;
 
 	@BeforeEach
 	void setUp() {
@@ -92,7 +93,18 @@ class TransactionServiceTests {
 		txn2.setStatus(Status.SUCCESS);
 		txn2.setAmount(BigDecimal.valueOf(500));
 		txn2.setTimestamp(LocalDateTime.of(2025, 10, 9, 9, 0));
-	}
+
+        transaction = new Transaction();
+        transaction.setTransactionId(1);
+        transaction.setFromWallet(walletFrom);
+        transaction.setToWallet(walletTo);
+        transaction.setAmount(new BigDecimal("200"));
+        transaction.setStatus(Status.SUCCESS);
+        transaction.setTimestamp(LocalDateTime.now());
+        transaction.setRemarks("Transferred Rs200 to wallet wallet456");
+        transactionList= new ArrayList<>();
+
+    }
 
 	@Test
 	void testAddMoney_amountNull() {
@@ -204,7 +216,7 @@ class TransactionServiceTests {
 	@Test
 	void testTransferWalletToWallet_insufficientFunds() {
 		BigDecimal amount = BigDecimal.valueOf(6000);
-
+                                           //WALLET001
 		when(walletRepository.findByWalletId("WALLET001")).thenReturn(Optional.of(walletFrom));
 		when(walletRepository.findByWalletId("WALLET002")).thenReturn(Optional.of(walletTo));
 
@@ -445,4 +457,35 @@ class TransactionServiceTests {
 
 		verify(transactionRepository, times(1)).findByFromWallet_WalletIdAndStatus("WALLET001", Status.FAILED);
 	}
+
+/*
+    @Test
+    void givenGetAllTransactionsForWalletIdThenShouldReturnListOfAllTransactionsForWalletId() {
+transactionList.add(transaction);
+walletId="WALLET001";
+log.info("Error messafe:  ------: "+ transactionList.get(0).getFromWallet().getWalletId());
+        //transactionRepository.save(transaction);
+        when(transactionRepository.findByFromWallet_WalletIdOrToWallet_WalletId("WALLET001","WALLET001")).thenReturn(transactionList);
+        List<Transaction> transactionList1 = transactionService.getAllTransactions(walletId);
+        assertEquals(transactionList,transactionList1);
+        verify(transactionRepository,times(1)).save(transaction);
+        verify(transactionRepository, times(1)).findByFromWallet_WalletIdOrToWallet_WalletId("WALLET001","WALLET001");
+
+    }
+
+    @Test
+    void testGetAllTransactions_WalletNotFound() {
+        String walletId = "invalidWallet";
+
+        when(walletRepository.existsById(walletId)).thenReturn(false);
+
+        WalletNotFoundException exception = assertThrows(WalletNotFoundException.class, () ->
+                transactionService.getAllTransactions(walletId));
+
+        assertEquals("Wallet not found with ID: " + walletId, exception.getMessage());
+        verify(walletRepository, times(1)).existsById(walletId);
+        verify(transactionRepository, never()).findByFromWallet_WalletIdOrToWallet_WalletId(any(),any());
+    }
+
+ */
 }

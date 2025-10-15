@@ -26,6 +26,6 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
 
 	List<Transaction> findByFromWallet_WalletIdAndStatus(String walletId, Status status);
 
-    List<Transaction> findByFromWallet_WalletIdOrToWallet_WalletId(String walletId);
+    List<Transaction> findByFromWallet_WalletIdOrToWallet_WalletId(String fromwalletId,String towalletId);
 
 }
