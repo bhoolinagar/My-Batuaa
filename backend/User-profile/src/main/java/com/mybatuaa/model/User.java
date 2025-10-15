@@ -1,12 +1,6 @@
 package com.mybatuaa.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -39,7 +33,7 @@ public class User {
 
 	@Column(nullable = false, unique = true)
 	@NotBlank(message = "Mobile number is required")
-	@Pattern(regexp = "^[0-9]{10}$", message = "Mobile number must be 10 digits")
+    @Pattern(regexp = "^\\d{10}$", message = "Mobile number must be 10 digits")
 	private String mobileNumber;
 
 	private String address;

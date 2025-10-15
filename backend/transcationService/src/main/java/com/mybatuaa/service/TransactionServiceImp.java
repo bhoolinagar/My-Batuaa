@@ -36,13 +36,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 public class TransactionServiceImp implements TransactionService {
-
-    @Autowired
-	private  TransactionRepository transactionRepository;
-    @Autowired
-	private  WalletRepository walletRepository;
-    @Autowired
-	private  BankAccountResposity bankAccountResposity;
+    private  final TransactionRepository transactionRepository;
+    private final WalletRepository walletRepository;
+    private  final BankAccountResposity bankAccountResposity;
 
 	@Autowired
 	public TransactionServiceImp(TransactionRepository transactionRepository, WalletRepository walletRepository,
@@ -166,7 +162,7 @@ public class TransactionServiceImp implements TransactionService {
 	public List<Transaction> filterTransactionsByRemark(String walletId, String remark) {
 		try {
 			Wallet wallet = Optional.ofNullable(walletId).filter(id -> !id.isBlank())
-					.flatMap(id -> walletRepository.findByWalletId(id))
+					.flatMap(walletRepository::findByWalletId)
 					.orElseThrow(() -> new WalletNotFoundException("Wallet Not Found or is invalid"));
 
 			String key = Optional.ofNullable(remark).orElse("");
@@ -217,8 +213,9 @@ public class TransactionServiceImp implements TransactionService {
 			List<Transaction> transactions = transactionRepository
 					.findByFromWallet_WalletIdOrToWallet_WalletIdAndTimestampBetween(walletId, walletId, startOfDay,
 							endOfDay);
-			return transactions.stream().sorted(Comparator.comparing(Transaction::getTimestamp))
-					.collect(Collectors.toList());
+            List<Transaction> transactionList = transactions.stream().sorted(Comparator.comparing(Transaction::getTimestamp))
+                    .collect(Collectors.toList());
+            return transactionList;
 		} catch (WalletNotFoundException | DateTimeException e) {
 			log.error("Wallet not found or start and end date should be before or equal to the current date");
 			throw e; // Let upper layers handle known exceptions
@@ -244,4 +241,10 @@ public class TransactionServiceImp implements TransactionService {
 		}
 	}
 
+
+    @Override
+    public List<Transaction> getAllTransactions(String walletId) {
+        return transactionRepository.findByFromWallet_WalletIdOrToWallet_WalletId(walletId);
+
+    }
 }

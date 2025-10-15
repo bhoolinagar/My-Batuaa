@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -23,16 +24,19 @@ public class Transaction {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer transactionId;  // Auto-generated PK
 
-  //  @ManyToOne
+    @ManyToOne
     @JoinColumn(name = "account_number", referencedColumnName = "account_number")
+    @JsonBackReference
     private BankAccount account;    // FK to BankAccount
 
-   // @ManyToOne
+    @ManyToOne
     @JoinColumn(name = "from_wallet_id", referencedColumnName = "wallet_id")
+    @JsonBackReference
     private Wallet fromWallet;      // FK to source Wallet
 
-   // @ManyToOne
+    @ManyToOne
     @JoinColumn(name = "to_wallet_id", referencedColumnName = "wallet_id")
+    @JsonBackReference
     private Wallet toWallet;        // FK to destination Wallet
 
     private BigDecimal amount;

@@ -1,18 +1,11 @@
 package com.mybatuaa.controller;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.math.BigDecimal;
-
+import com.mybatuaa.exception.BankAccountAlreadyLinkedException;
+import com.mybatuaa.exception.WalletNotFoundException;
+import com.mybatuaa.model.BankAccount;
+import com.mybatuaa.model.Wallet;
+import com.mybatuaa.service.BankService;
+import com.mybatuaa.service.WalletService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -23,12 +16,14 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import com.mybatuaa.exception.BankAccountAlreadyLinkedException;
-import com.mybatuaa.exception.WalletNotFoundException;
-import com.mybatuaa.model.BankAccount;
-import com.mybatuaa.model.Wallet;
-import com.mybatuaa.service.BankService;
-import com.mybatuaa.service.WalletService;
+import java.math.BigDecimal;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 //@WebMvcTest
 class WalletControllerTest {

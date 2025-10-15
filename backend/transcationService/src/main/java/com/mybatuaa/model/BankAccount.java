@@ -11,7 +11,6 @@ import lombok.Setter;
 
 @Entity
 @Table(name="bank_accounts")
-
 public class BankAccount {
 
 	@Id

@@ -4,7 +4,6 @@ import com.mybatuaa.exception.BankAccountAlreadyLinkedException;
 import com.mybatuaa.exception.WalletNotFoundException;
 import com.mybatuaa.model.BankAccount;
 import com.mybatuaa.model.Wallet;
-
 import com.mybatuaa.repository.BankAccountRepository;
 import com.mybatuaa.repository.WalletRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +21,7 @@ public class BankServiceImpl  implements BankService{
     private BankAccountRepository bankAccountRepository;
     @Autowired
     private WalletRepository walletRepository;
+
 
     @Override
     public BankAccount linkBankAccountToWallet(String walletId, BankAccount account) {

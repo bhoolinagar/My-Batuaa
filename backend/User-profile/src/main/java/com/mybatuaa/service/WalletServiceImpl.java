@@ -1,21 +1,23 @@
 package com.mybatuaa.service;
 
+import com.mybatuaa.exception.WalletNotFoundException;
+import com.mybatuaa.model.Wallet;
+import com.mybatuaa.repository.WalletRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import com.mybatuaa.exception.WalletNotFoundException;
-import com.mybatuaa.model.Wallet;
-import com.mybatuaa.repository.WalletRepository;
-
 @Service
 public class WalletServiceImpl implements WalletService {
+    private final WalletRepository walletRepository;
 
-	@Autowired
-	private WalletRepository walletRepository;
+    @Autowired
+    public WalletServiceImpl(WalletRepository walletRepository) {
+        this.walletRepository = walletRepository;
+    }
 
 	// to generate walletId unique 11 characters with help of( userId,email,
 	// phoneNumber)
@@ -36,7 +38,8 @@ public class WalletServiceImpl implements WalletService {
 			}
 
 			// Build final ID: "WAL" + 8-character hash = 11 characters
-			return "WAL" + hex.substring(0, 8).toUpperCase();
+            String s = "WAL" + hex.substring(0, 8).toUpperCase();
+            return s;
 
 		} catch (Exception e) {
 			throw new RuntimeException("Error generating wallet ID", e);
@@ -48,7 +51,7 @@ public class WalletServiceImpl implements WalletService {
 	@Override
 	public BigDecimal getWalletBalance(String walletId) {
 		return walletRepository.findByWalletId(walletId).map(Wallet::getBalance)
-				.orElseThrow(() -> new WalletNotFoundException("Wallet not found with ID: " + walletId));
+                .orElseThrow(() -> new WalletNotFoundException(STR."Wallet not found with ID: \{walletId}"));
 	}
 
 }

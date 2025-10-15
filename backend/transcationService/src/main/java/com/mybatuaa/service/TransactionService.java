@@ -22,4 +22,6 @@ public interface TransactionService {
 
 	// View transaction by Type (based on type)
 	List<Transaction> filterTransactionByType(String walletId, Status type);
+
+    public List<Transaction> getAllTransactions(String WalletId) ;
 }
