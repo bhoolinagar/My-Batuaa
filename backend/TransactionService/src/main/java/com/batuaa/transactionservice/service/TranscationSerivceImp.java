@@ -17,6 +17,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import java.time.DateTimeException;
 import java.time.LocalDate;
@@ -149,8 +150,17 @@ private final WalletRepository walletRepository;
     }
 
     @Override
-    public List<Transaction> getAllTransactions(String emailId, String walletId) {
-        return List.of();
+    public List<Transaction> getAllTransactions(String emailId, String walletId) throws EmptyTransactionListException{
+        List<Transaction> result = transactionRepository.findByEmailAndWallet(emailId, walletId);
+
+        if (result.isEmpty()) {
+            throw new EmptyTransactionListException("No transactions found for wallet: " + walletId);
+        }
+
+        return result.stream()
+                .sorted(Comparator.comparing(Transaction::getTimestamp).reversed())
+                .collect(Collectors.toList());
+
     }
 
     @Override

@@ -44,5 +44,12 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
             where t.fromWallet.walletId = :walletId and t.toWallet.walletId = :walletId1 and t.type = :type""")
     List<Transaction> findByWalletIdAndType(@Param("walletId") String walletId, @Param("walletId1") String walletId1, @Param("type") Type type);
 
+    @Query(value = "SELECT * FROM transaction_records " +
+            "WHERE from_email_id = ?1 " +
+            "AND (from_wallet_id = ?2 OR to_wallet_id = ?2)",
+            nativeQuery = true)
+    List<Transaction> findByEmailAndWallet(String emailId, String walletId);
+
+
 
 }

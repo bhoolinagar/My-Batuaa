@@ -1,6 +1,7 @@
 package com.batuaa.transactionservice.controller;
 
 import com.batuaa.transactionservice.dto.*;
+import com.batuaa.transactionservice.exception.EmptyTransactionListException;
 import com.batuaa.transactionservice.model.Transaction;
 import com.batuaa.transactionservice.service.TransactionService;
 import jakarta.validation.Valid;
@@ -32,7 +33,12 @@ public class TransactionController {
     @GetMapping("/all-transactions")
     public ResponseEntity<?> getAllTransactions(@RequestParam String emailId,@RequestParam String walletId) {
         log.info("Fetching all transactions for walletId: {}", walletId);
-        return ResponseEntity.ok(transactionService.getAllTransactions(emailId,walletId));
+        try {
+            return ResponseEntity.ok(transactionService.getAllTransactions(emailId, walletId));
+        }
+        catch(EmptyTransactionListException e){
+            return  new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        }
     }
 
     /**
