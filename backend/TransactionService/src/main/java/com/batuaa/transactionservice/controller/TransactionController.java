@@ -37,8 +37,8 @@ public class TransactionController {
             return ResponseEntity.ok(transactionService.getAllTransactions(emailId, walletId));
         }
         catch(EmptyTransactionListException e){
-            return  new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-        }
+           return  new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+       }
     }
 
     /**
