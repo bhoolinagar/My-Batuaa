@@ -27,14 +27,15 @@ public class Buyer {
     private String emailId;
     @NotBlank
     private String name;
-    @Enumerated(EnumType.STRING)
-    private Gender gender;
+
     // Store hashed password only, not plain text
     @Size(min = 8, max = 12, message = "Password must be between 8 and 12 characters")
     @Column(nullable = false)
     private String password;
     @Enumerated(EnumType.STRING)
     private Role role;
+    @Enumerated(EnumType.STRING)
+    private Gender gender;
 
     public String getEmailId() {
         return emailId;
