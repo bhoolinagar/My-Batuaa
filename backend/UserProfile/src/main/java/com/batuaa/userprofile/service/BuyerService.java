@@ -1,6 +1,7 @@
 package com.batuaa.userprofile.service;
 
 import com.batuaa.userprofile.dto.BuyerDto;
+import com.batuaa.userprofile.dto.LoginDto;
 import com.batuaa.userprofile.model.Buyer;
 
 public interface BuyerService {
@@ -9,5 +10,5 @@ public interface BuyerService {
     Buyer registerBuyer(BuyerDto buyerDto);
 
     // Validate login credentials, returns Buyer if valid, null if invalid
-    Buyer validateBuyer(BuyerDto buyerDto);
+    Buyer validateBuyer(LoginDto loginDto);
 }

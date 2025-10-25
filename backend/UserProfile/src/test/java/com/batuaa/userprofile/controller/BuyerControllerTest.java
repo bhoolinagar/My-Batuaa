@@ -1,6 +1,9 @@
 package com.batuaa.userprofile.controller;
 
 import com.batuaa.userprofile.dto.BuyerDto;
+import com.batuaa.userprofile.dto.LoginDto;
+import com.batuaa.userprofile.exception.LoginException;
+import com.batuaa.userprofile.exception.RegistrationException;
 import com.batuaa.userprofile.model.Buyer;
 import com.batuaa.userprofile.model.Role;
 import com.batuaa.userprofile.service.BuyerService;
@@ -15,9 +18,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(BuyerController.class)
 class BuyerControllerTest {
@@ -28,26 +31,31 @@ class BuyerControllerTest {
     @MockBean
     private BuyerService buyerService;
 
+    @Autowired
     private ObjectMapper objectMapper;
+
     private BuyerDto buyerDto;
     private Buyer buyer;
+    private LoginDto loginDto;
 
     @BeforeEach
     void setUp() {
-        objectMapper = new ObjectMapper();
-
         buyerDto = new BuyerDto();
         buyerDto.setEmailId("anjali@gmail.com");
         buyerDto.setName("Anjali Test");
         buyerDto.setPassword("password123");
 
         buyer = new Buyer();
-        buyer.setEmailId(buyerDto.getEmailId().toLowerCase());
-        buyer.setName(buyerDto.getName());
-        buyer.setPassword(buyerDto.getPassword());
+        buyer.setEmailId("anjali@gmail.com");
+        buyer.setName("Anjali Test");
+        buyer.setPassword("password123");
+
+        loginDto = new LoginDto();
+        loginDto.setEmailId("anjali@gmail.com");
+        loginDto.setPassword("password123");
     }
 
-    // Admin And Buyer registration testcase
+    // Buyer Registration
     @Test
     void testRegisterBuyer_Success() throws Exception {
         buyerDto.setRole(Role.BUYER);
@@ -61,10 +69,11 @@ class BuyerControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.status").value("success"))
                 .andExpect(jsonPath("$.message").value("Buyer registered successfully"))
-                .andExpect(jsonPath("$.data.name").value("Anjali Test"))
-                .andExpect(jsonPath("$.data.Role").value("BUYER"));
+                .andExpect(jsonPath("$.data.emailId").value("anjali@gmail.com"))
+                .andExpect(jsonPath("$.data.role").value("BUYER"));
     }
 
+    //  Admin Registration
     @Test
     void testRegisterAdmin_Success() throws Exception {
         buyerDto.setRole(Role.ADMIN);
@@ -78,37 +87,37 @@ class BuyerControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.status").value("success"))
                 .andExpect(jsonPath("$.message").value("Admin registered successfully"))
-                .andExpect(jsonPath("$.data.name").value("Anjali Test"))
-                .andExpect(jsonPath("$.data.Role").value("ADMIN"));
+                .andExpect(jsonPath("$.data.emailId").value("anjali@gmail.com"))
+                .andExpect(jsonPath("$.data.role").value("ADMIN"));
     }
 
-
+    //Email already exists
     @Test
-    void testRegisterBuyer_NullRole_Failure() throws Exception {
-        buyerDto.setRole(null);
+    void testRegisterBuyer_EmailExists_Failure() throws Exception {
+        buyerDto.setRole(Role.BUYER);
 
-        Mockito.when(buyerService.registerBuyer(any(BuyerDto.class)))
-                .thenThrow(new RuntimeException("Role must be provided (ADMIN or BUYER)"));
+        doThrow(new RegistrationException("Email already registered"))
+                .when(buyerService).registerBuyer(any(BuyerDto.class));
 
         mockMvc.perform(post("/buyers/api/v1/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(buyerDto)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value("fail"))
-                .andExpect(jsonPath("$.message").value("Role must be provided (ADMIN or BUYER)"))
+                .andExpect(jsonPath("$.message").value("Email already registered"))
                 .andExpect(jsonPath("$.data").doesNotExist());
     }
 
-    // Admin And Buyer login testcase
+    // Buyer Login
     @Test
-    void testBuyerLoginSuccess() throws Exception {
+    void testBuyerLogin_Success() throws Exception {
         buyer.setRole(Role.BUYER);
 
-        Mockito.when(buyerService.validateBuyer(any(BuyerDto.class))).thenReturn(buyer);
+        Mockito.when(buyerService.validateBuyer(any(LoginDto.class))).thenReturn(buyer);
 
         mockMvc.perform(post("/buyers/api/v1/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(buyerDto)))
+                        .content(objectMapper.writeValueAsString(loginDto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("success"))
                 .andExpect(jsonPath("$.message").value("Buyer login successful"))
@@ -116,15 +125,16 @@ class BuyerControllerTest {
                 .andExpect(jsonPath("$.data.token").exists());
     }
 
+    //  Admin Login
     @Test
-    void testAdminLoginSuccess() throws Exception {
+    void testAdminLogin_Success() throws Exception {
         buyer.setRole(Role.ADMIN);
 
-        Mockito.when(buyerService.validateBuyer(any(BuyerDto.class))).thenReturn(buyer);
+        Mockito.when(buyerService.validateBuyer(any(LoginDto.class))).thenReturn(buyer);
 
         mockMvc.perform(post("/buyers/api/v1/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(buyerDto)))
+                        .content(objectMapper.writeValueAsString(loginDto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("success"))
                 .andExpect(jsonPath("$.message").value("Admin login successful"))
@@ -132,16 +142,18 @@ class BuyerControllerTest {
                 .andExpect(jsonPath("$.data.token").exists());
     }
 
+
     @Test
-    void testLoginInvalidCredentials() throws Exception {
-        Mockito.when(buyerService.validateBuyer(any(BuyerDto.class))).thenReturn(null);
+    void testLogin_InvalidCredentials_Failure() throws Exception {
+        doThrow(new LoginException("Invalid email or password"))
+                .when(buyerService).validateBuyer(any(LoginDto.class));
 
         mockMvc.perform(post("/buyers/api/v1/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(buyerDto)))
+                        .content(objectMapper.writeValueAsString(loginDto)))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.status").value("fail"))
-                .andExpect(jsonPath("$.message").value("Invalid credentials"))
+                .andExpect(jsonPath("$.message").value("Invalid email or password"))
                 .andExpect(jsonPath("$.data").doesNotExist());
     }
 }

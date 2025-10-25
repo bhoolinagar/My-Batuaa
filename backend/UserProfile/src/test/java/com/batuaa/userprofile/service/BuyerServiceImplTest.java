@@ -1,6 +1,7 @@
 package com.batuaa.userprofile.service;
 
 import com.batuaa.userprofile.dto.BuyerDto;
+import com.batuaa.userprofile.dto.LoginDto;
 import com.batuaa.userprofile.model.Buyer;
 import com.batuaa.userprofile.model.Role;
 import com.batuaa.userprofile.repository.BuyerRepository;
@@ -27,6 +28,7 @@ class BuyerServiceImplTest {
 
     private BuyerDto buyerDto;
     private Buyer buyer;
+    private LoginDto loginDto;
 
     @BeforeEach
     void setUp() {
@@ -36,20 +38,22 @@ class BuyerServiceImplTest {
         buyerDto.setEmailId("anjali@gmail.com");
         buyerDto.setName("Anjali Test");
         buyerDto.setPassword("password123");
+        buyerDto.setRole(Role.BUYER);
 
         buyer = new Buyer();
         buyer.setEmailId(buyerDto.getEmailId().toLowerCase());
         buyer.setName(buyerDto.getName());
         buyer.setPassword(buyerDto.getPassword());
-        buyer.setRole(Role.BUYER); // <- Important to avoid null role
-    }
-
-    // ================= Register Tests =================
-    @Test
-    void testRegisterBuyer_BuyerRole_Success() {
-        buyerDto.setRole(Role.BUYER);
         buyer.setRole(Role.BUYER);
 
+        loginDto = new LoginDto();
+        loginDto.setEmailId("anjali@gmail.com");
+        loginDto.setPassword("password123");
+    }
+
+    // Register Tests
+    @Test
+    void testRegisterBuyer_BuyerRole_Success() {
         when(buyerRepository.existsByEmailIdIgnoreCase(anyString())).thenReturn(false);
         when(buyerRepository.save(any(Buyer.class))).thenReturn(buyer);
 
@@ -77,7 +81,7 @@ class BuyerServiceImplTest {
 
     @Test
     void testRegisterBuyer_NullRole_Failure() {
-        buyerDto.setRole(null); // role missing
+        buyerDto.setRole(null);
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
             buyerService.registerBuyer(buyerDto);
@@ -89,8 +93,6 @@ class BuyerServiceImplTest {
 
     @Test
     void testRegisterBuyer_DuplicateEmail_Failure() {
-        buyerDto.setRole(Role.BUYER);
-
         when(buyerRepository.existsByEmailIdIgnoreCase(anyString())).thenReturn(true);
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
@@ -101,36 +103,43 @@ class BuyerServiceImplTest {
         verify(buyerRepository, never()).save(any(Buyer.class));
     }
 
-    // ================= Validate Buyer Tests =================
+    //  Validate Buyer Tests
     @Test
     void testValidateBuyer_CorrectCredentials_ReturnsBuyer() {
         buyer.setRole(Role.BUYER); // ensure role is set
-        when(buyerRepository.findByEmailId(anyString())).thenReturn(Optional.of(buyer));
 
-        Buyer result = buyerService.validateBuyer(buyerDto);
+        when(buyerRepository.findByEmailIdAndPassword(anyString(), anyString()))
+                .thenReturn(Optional.of(buyer));
+
+        Buyer result = buyerService.validateBuyer(loginDto);
 
         assertNotNull(result);
         assertEquals("Anjali Test", result.getName());
         assertEquals(Role.BUYER, result.getRole());
     }
 
-    @Test
-    void testValidateBuyer_WrongPassword_ReturnsNull() {
-        when(buyerRepository.findByEmailId(anyString())).thenReturn(Optional.of(buyer));
-
-        buyerDto.setPassword("wrongPassword");
-
-        Buyer result = buyerService.validateBuyer(buyerDto);
-
-        assertNull(result);
-    }
 
     @Test
-    void testValidateBuyer_NonExistentEmail_ReturnsNull() {
-        when(buyerRepository.findByEmailId(anyString())).thenReturn(Optional.empty());
+    void testValidateBuyer_WrongPassword_ThrowsLoginException() {
+        when(buyerRepository.findByEmailIdAndPassword(anyString(), anyString()))
+                .thenReturn(Optional.empty());
 
-        Buyer result = buyerService.validateBuyer(buyerDto);
+        loginDto.setPassword("wrongPassword");
 
-        assertNull(result);
+        assertThrows(com.batuaa.userprofile.exception.LoginException.class, () -> {
+            buyerService.validateBuyer(loginDto);
+        });
     }
+
+
+    @Test
+    void testValidateBuyer_NonExistentEmail_ThrowsLoginException() {
+        when(buyerRepository.findByEmailIdAndPassword(anyString(), anyString()))
+                .thenReturn(Optional.empty());
+
+        assertThrows(com.batuaa.userprofile.exception.LoginException.class, () -> {
+            buyerService.validateBuyer(loginDto);
+        });
+    }
+
 }

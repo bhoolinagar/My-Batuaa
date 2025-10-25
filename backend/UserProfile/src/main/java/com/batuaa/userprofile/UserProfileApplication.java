@@ -14,7 +14,7 @@ public class UserProfileApplication {
     }
 
 
-    @Bean
+    /*@Bean
     public FilterRegistrationBean getFilter()
     {
         FilterRegistrationBean filterbean=new FilterRegistrationBean();
@@ -22,5 +22,5 @@ public class UserProfileApplication {
         filterbean.addUrlPatterns("/wallet/api/v1/*");
         return filterbean;
 
-    }
+    }*/
 }

@@ -5,7 +5,6 @@ import com.batuaa.userprofile.exception.BuyerNotFoundException;
 import com.batuaa.userprofile.exception.WalletAlreadyFound;
 import com.batuaa.userprofile.exception.WalletNotFoundException;
 import com.batuaa.userprofile.model.Buyer;
-import com.batuaa.userprofile.model.Gender;
 import com.batuaa.userprofile.model.Role;
 import com.batuaa.userprofile.model.Wallet;
 import com.batuaa.userprofile.repository.BuyerRepository;
@@ -54,7 +53,6 @@ class WalletServiceImplTest {
         buyer = new Buyer();
         buyer.setEmailId("bhooli123@gmail.com");
         buyer.setName("Bhooli");
-        buyer.setGender(Gender.FEMALE);
         buyer.setPassword("password123");
         buyer.setRole(Role.BUYER);
 

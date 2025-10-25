@@ -1,6 +1,7 @@
 package com.batuaa.userprofile.exception;
 
 import com.batuaa.userprofile.dto.ApiResponse;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -8,6 +9,18 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(RegistrationException.class)
+    public ResponseEntity<ApiResponse> handleRegistrationException(RegistrationException ex) {
+        ApiResponse response = new ApiResponse("fail", ex.getMessage());
+        return ResponseEntity.status(400).body(response);
+    }
+    @ExceptionHandler(LoginException.class)
+    public ResponseEntity<ApiResponse> handleLoginException(LoginException ex) {
+        ApiResponse response = new ApiResponse("fail", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+    }
+
 
     // Handle validation errors (from @Valid in DTO)
     @ExceptionHandler(MethodArgumentNotValidException.class)
