@@ -13,10 +13,22 @@ import { useLocation, useNavigate } from "react-router-dom";
 import "../component/AddMoney.css";
 import Footer from "../component/Footer";
 import Navbar from "../Navbar";
+import { Snackbar, Alert as MuiAlert } from "@mui/material";
+
 
 export default function TransferMoney() {
   const location = useLocation();
   const navigate = useNavigate();
+
+  const [snackbar, setSnackbar] = useState({
+  open: false,
+  message: "",
+  severity: "success",
+});
+const handleCloseSnackbar = (_, reason) => {
+  if (reason === "clickaway") return;
+  setSnackbar({ ...snackbar, open: false });
+};
 
   // Get email and primary wallet from state|session
   const { email, primaryWalletId } = location.state || {};
@@ -94,8 +106,12 @@ export default function TransferMoney() {
       !formData.toBuyerEmailId ||
       !formData.amount
     ) {
-      setMessage("Please fill all required fields.");
-      return;
+      setSnackbar({
+      open: true,
+      message: "Please fill all required fields.",
+      severity: "error",
+    });
+    return;
     }
 
     setLoading(true);
@@ -117,15 +133,24 @@ export default function TransferMoney() {
         }
       );
 
-      setMessage(res.data.message || "Transaction successful!");
-      setFormData((prev) => ({
-        ...prev,
-        toWalletId: "",
-        toBuyerEmailId:"",
-        amount: "",
-        remarks: "",
-      }));
-    } catch (err) {
+      setSnackbar({
+      open: true,
+      message: res.data.message || "Transaction successful!",
+      severity: "success",
+    });
+
+      setFormData({
+      ...formData,
+      toWalletId: "",
+      toBuyerEmailId: "",
+      amount: "",
+      remarks: "",
+    });
+    setTimeout(() => {
+      navigate("/dashboard", { state: { email: fromBuyerEmail } });
+    }, 2000);
+    }  
+    catch (err) {
       console.error("Transaction error:", err);
       console.log("Full backend error response:", err.response?.data);
 
@@ -141,7 +166,11 @@ export default function TransferMoney() {
           "Receiver email and wallet ID do not match. Please verify the details."
         );
       } else {
-        setMessage(backendMessage);
+       setSnackbar({
+      open: true,
+      message: backendMessage,
+      severity: "error",
+    });
       }
     } finally {
       setLoading(false);
@@ -254,6 +283,28 @@ export default function TransferMoney() {
           </Box>
         )}
       </form>
+
+    <Snackbar
+      open={snackbar.open}
+      autoHideDuration={5000}
+      onClose={handleCloseSnackbar}
+      anchorOrigin={{ vertical: "top", horizontal: "right" }}
+    >
+      <MuiAlert
+        elevation={6}
+        variant="filled"
+        severity={snackbar.severity}
+        onClose={handleCloseSnackbar}
+        sx={{
+          backgroundColor:
+            snackbar.severity === "success" ? "#4caf50" : "#d32f2f",
+          color: "white",
+          fontWeight: 600,
+        }}
+      >
+        {snackbar.message}
+      </MuiAlert>
+    </Snackbar>
       <Footer />
     </div>
   );

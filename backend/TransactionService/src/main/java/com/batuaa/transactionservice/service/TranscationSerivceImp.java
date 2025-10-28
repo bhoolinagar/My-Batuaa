@@ -20,6 +20,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -48,6 +50,23 @@ public TranscationSerivceImp(TransactionRepository transactionRepository, Wallet
         this.walletRepository = walletRepository;
     this.buyerRepository = buyerRepository;
     }
+
+    private BigDecimal calculateTransactionFee(BigDecimal amount) {
+        BigDecimal feePercentage;
+//        - 0 to 1,000 → 2%
+//        - 1,001 to 5,000 → 5%
+//        - Above 5,000 → 7%
+        if (amount.compareTo(new BigDecimal("1000")) <= 0) {
+            feePercentage = new BigDecimal("0.02"); // 2%
+        } else if (amount.compareTo(new BigDecimal("5000")) <= 0) {
+            feePercentage = new BigDecimal("0.05"); // 5%
+        } else {
+            feePercentage = new BigDecimal("0.07"); // 7%
+        }
+        // fee = amount × percentage
+        return amount.multiply(feePercentage).setScale(2, RoundingMode.HALF_UP);
+    }
+
 // wallet to wallet transfer
 
     @Override
@@ -84,9 +103,12 @@ public TranscationSerivceImp(TransactionRepository transactionRepository, Wallet
                         "A similar transaction is already in process from " +
                                 transferDto.getFromWalletId() + " to " + transferDto.getToWalletId());
             }
+            // Calculate transaction fee
+            BigDecimal transactionFee = calculateTransactionFee(transferDto.getAmount());
+            BigDecimal totalDebit = transferDto.getAmount().add(transactionFee);
 
             // Check for insufficient funds before proceeding
-            if (walletFrom.getBalance().compareTo(transferDto.getAmount()) < 0) {
+            if (walletFrom.getBalance().compareTo(totalDebit) < 0) {
                 // Logging the  transaction as failed for sender-only transaction
                 senderTransaction = new Transaction(
                         walletFrom, walletTo, walletFrom.getBuyer(), walletTo.getBuyer(),
@@ -111,7 +133,7 @@ public TranscationSerivceImp(TransactionRepository transactionRepository, Wallet
             log.info("Sender transaction created | ID: {}, Amount: {}", senderTransaction.getTransactionId(), transferDto.getAmount());
 
             //update balances
-            walletFrom.setBalance(walletFrom.getBalance().subtract(transferDto.getAmount()));
+            walletFrom.setBalance(walletFrom.getBalance().subtract(totalDebit));
             walletTo.setBalance(walletTo.getBalance().add(transferDto.getAmount()));
             walletRepository.save(walletFrom);
             walletRepository.save(walletTo);

@@ -227,8 +227,9 @@ public class TransactionServiceTest {
     3) Unexpected DB exception (UnableToAddMoneyException)
      */
     @Test
-    void testTransferWalletToWallet_GeneratesTransactionId_And_UpdatesStatus() {
+    void testTransferWalletToWallet_GeneratesTransactionId_And_UpdatesStatus_WithFee() {
 
+        // Arrange
         Buyer buyerFrom = new Buyer();
         buyerFrom.setEmailId("from@gmail.com");
         Buyer buyerTo = new Buyer();
@@ -268,20 +269,31 @@ public class TransactionServiceTest {
 
         ArgumentCaptor<Transaction> transactionCaptor = ArgumentCaptor.forClass(Transaction.class);
 
+        // Act
         Transaction result = transactionService.transferWalletToWallet(transferDto);
 
+        // Assert
         assertNotNull(result.getTransactionId(), "Transaction ID should be generated");
         assertEquals(Status.SUCCESS, result.getStatus(), "Final status should be SUCCESS");
         assertEquals("Transfer completed", result.getRemarks(), "Remarks should match DTO");
 
+        // Verify all saves (PROCESSING + SUCCESS + RECEIVED)
         verify(transactionRepository, atLeast(3)).save(transactionCaptor.capture());
         List<Transaction> allSaved = transactionCaptor.getAllValues();
-
         assertTrue(allSaved.stream().anyMatch(t -> t.getStatus() == Status.SUCCESS),
                 "There should be a SUCCESS transaction saved");
 
-        assertEquals(new BigDecimal("800.00"), walletFrom.getBalance(), "Sender balance should decrease by 200");
-        assertEquals(new BigDecimal("700.00"), walletTo.getBalance(), "Receiver balance should increase by 200");
+        // --- Fee Calculation ---
+        // For Rs.200 → 2% fee = Rs.4.00
+        BigDecimal expectedFee = new BigDecimal("4.00");
+        BigDecimal expectedSenderFinalBalance = new BigDecimal("1000.00").subtract(new BigDecimal("200.00")).subtract(expectedFee);
+        BigDecimal expectedReceiverFinalBalance = new BigDecimal("500.00").add(new BigDecimal("200.00"));
+
+        // Verify balances after fee deduction
+        assertEquals(expectedSenderFinalBalance, walletFrom.getBalance(),
+                "Sender balance should decrease by amount + fee");
+        assertEquals(expectedReceiverFinalBalance, walletTo.getBalance(),
+                "Receiver balance should increase by transfer amount");
     }
 
 
