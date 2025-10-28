@@ -1,5 +1,6 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import React, { useState } from "react";
+import './AddMoney.css';
 import {
   Box,
   TextField,
@@ -17,9 +18,11 @@ import EmailIcon from "@mui/icons-material/Email";
 import LockIcon from "@mui/icons-material/Lock";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import axios from "axios";
+
 import PublicAppBar from "../landing/PublicAppBar";
 import Footer from "./Footer";
 export default function Register() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
     emailId: "",
@@ -83,6 +86,10 @@ export default function Register() {
       });
 
       setFormData({ name: "", emailId: "", password: "", role: "" });
+     setTimeout(() => {
+    navigate("/login");
+  },1500);
+
     } catch (error) {
       setSnackbar({
         open: true,
@@ -101,7 +108,8 @@ export default function Register() {
 
   return (
     <div>
-     
+     {/*  Navbar */}
+      <PublicAppBar />
     <Box
       sx={{
         minHeight: "100vh",
@@ -114,11 +122,12 @@ export default function Register() {
       <Box
         sx={{
           width: "400px",
-          backgroundColor: "white",
+          backgroundColor: "#f3f5f9",
           borderRadius: "20px",
           boxShadow: "0px 0px 20px rgba(0,0,0,0.1)",
           p: 4,
           textAlign: "center",
+          border: "2px solid #0F3A6E",
         }}
       >
         <h3
@@ -130,7 +139,8 @@ export default function Register() {
         >
           Create New Account
         </h3>
-        <p style={{ color: "#555", marginBottom: "20px", fontSize: "0.9rem" }}>
+
+        <p style={{ color: "gray", marginBottom: "20px", fontSize: "0.9rem" }}>
   Already Registered?{" "}
   <Link
     to="/login"
@@ -144,7 +154,6 @@ export default function Register() {
   </Link>
 </p>
         
-
         <form onSubmit={handleSubmit}>
           {/* Name */}
           <TextField

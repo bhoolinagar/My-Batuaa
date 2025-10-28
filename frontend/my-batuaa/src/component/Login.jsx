@@ -8,6 +8,8 @@ import {
   Snackbar,
 } from "@mui/material";
 import MuiAlert from "@mui/material/Alert";
+import logo from "../assets/logo.png";
+import "../component/AddMoney.css";
 import EmailIcon from "@mui/icons-material/Email";
 import LockIcon from "@mui/icons-material/Lock";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
@@ -60,14 +62,10 @@ export default function Login() {
       const { token, role,email ,name} = response.data.data;
 
       // Save token and role
-      //localStorage.setItem("token", token);
-      //localStorage.setItem("role", role);
-      //localStorage.setItem("email",email)
-
       sessionStorage.setItem("email",email)
       sessionStorage.setItem("token",token)
       sessionStorage.setItem("role", role)
-       sessionStorage.setItem("name", name)
+      sessionStorage.setItem("name", name)
 
 
       // Show success message
@@ -95,24 +93,33 @@ export default function Login() {
   };
 
   return (
-    <div>
     
+    <div>
+     {/*  Navbar */}
+          <PublicAppBar/> 
+              
     <Box
       sx={{
         minHeight: "100vh",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
+        backgroundColor: "#f9f9f9",
+        gap: 2,
       }}
     >
+      
+      
       <Box
         sx={{
           width: "400px",
-          backgroundColor: "white",
+          backgroundColor: "#f3f5f9",
           borderRadius: "20px",
           boxShadow: "0px 0px 20px rgba(0,0,0,0.1)",
           p: 4,
           textAlign: "center",
+          border: "2px solid #0F3A6E",
+          
         }}
       >
         <h3
