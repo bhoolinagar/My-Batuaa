@@ -38,6 +38,10 @@ private  final TransactionRepository transactionRepository;
 private final WalletRepository walletRepository;
 
 private BuyerRepository buyerRepository;
+
+@Autowired
+private TransactionLoggingService transactionLoggingService;
+
 @Autowired
 public TranscationSerivceImp(TransactionRepository transactionRepository, WalletRepository walletRepository, BuyerRepository buyerRepository) {
         this.transactionRepository = transactionRepository;
@@ -75,8 +79,22 @@ public TranscationSerivceImp(TransactionRepository transactionRepository, Wallet
                                 transferDto.getFromWalletId() + " to " + transferDto.getToWalletId());
             }
 
+            // Check for insufficient funds before proceeding
             if (walletFrom.getBalance().compareTo(transferDto.getAmount()) < 0) {
-                throw new InsufficientFundsException("Insufficient funds in sender wallet");
+                // Logging the  transaction as failed for sender-only transaction
+                senderTransaction = new Transaction(
+                        walletFrom, walletTo, walletFrom.getBuyer(), walletTo.getBuyer(),
+                        transferDto.getAmount(), LocalDateTime.now(),
+                        Status.FAILED, (transferDto.getRemarks() != null && !transferDto.getRemarks().trim().isEmpty())
+                        ? transferDto.getRemarks()
+                        : "Transfer failed: Insufficient funds in your wallet.",
+                        Type.WITHDRAWN
+                );
+
+                log.warn("Transfer failed due to insufficient funds | Wallet: {}, Amount: {}",
+                        transferDto.getFromWalletId(), transferDto.getAmount());
+
+                throw new InsufficientFundsException("Insufficient funds in your selected wallet");
             }
 
             // Sender transaction
@@ -116,7 +134,8 @@ public TranscationSerivceImp(TransactionRepository transactionRepository, Wallet
             if (senderTransaction != null) {
                 senderTransaction.setStatus(Status.FAILED);
                 senderTransaction.setRemarks("Transfer failed: " + e.getMessage());
-                transactionRepository.save(senderTransaction);
+                transactionLoggingService.logFailedTransaction(senderTransaction);
+
             }
             throw e;
 

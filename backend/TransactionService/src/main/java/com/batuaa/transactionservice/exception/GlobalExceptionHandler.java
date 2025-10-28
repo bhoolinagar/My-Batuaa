@@ -15,12 +15,18 @@ import java.util.stream.Collectors;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(org.hibernate.StaleStateException.class)
+    public ResponseEntity<ApiResponse> handleStaleStateException(org.hibernate.StaleStateException ex) {
+        ApiResponse response = new ApiResponse("fail", "Transaction could not be completed due to Insufficient funds", null);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
     @ExceptionHandler(InsufficientFundsException.class)
     public ResponseEntity<ApiResponse<Object>> handleInsufficientFunds(InsufficientFundsException ex) {
 
         ApiResponse<Object> response = new ApiResponse<>("fail", ex.getMessage(), null);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
+
     @ExceptionHandler(InvalidWalletTransactionException.class)
     public ResponseEntity<ApiResponse<Object>> handleInvalidWalletTransaction(InvalidWalletTransactionException ex){
         ApiResponse<Object> response = new ApiResponse<>("fail", ex.getMessage(), null);
