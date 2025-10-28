@@ -1,6 +1,8 @@
 package com.batuaa.transactionservice.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 
@@ -10,13 +12,14 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "wallet_records")
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "walletId")
 public class Wallet {
 
     @Id
     @Column(name = "wallet_id", nullable = false, unique = true)
     private String walletId;
-    @JsonBackReference
-    @ManyToOne
+   // @JsonBackReference
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "buyer_email", referencedColumnName = "email_id")// maps to User.userId
     private Buyer buyer;
     private LocalDateTime createdAt;

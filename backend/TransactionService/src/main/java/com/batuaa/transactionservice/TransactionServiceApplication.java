@@ -13,14 +13,14 @@ public class TransactionServiceApplication {
 		SpringApplication.run(TransactionServiceApplication.class, args);
 	}
 
-    @Bean
-    public FilterRegistrationBean getFilter()
-    {
-
-        FilterRegistrationBean filterbean=new FilterRegistrationBean();
-        filterbean.setFilter(new TransactionFilter());
-        filterbean.addUrlPatterns("/transaction/api/v2/*");
-        return filterbean;
-
-    }
+//    @Bean
+//    public FilterRegistrationBean getFilter()
+//    {
+//
+//        FilterRegistrationBean filterbean=new FilterRegistrationBean();
+//        filterbean.setFilter(new TransactionFilter());
+//        filterbean.addUrlPatterns("/transaction/api/v2/*");
+//        return filterbean;
+//
+//    }
 }

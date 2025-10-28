@@ -1,6 +1,8 @@
 package com.batuaa.transactionservice.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -10,6 +12,7 @@ import java.util.List;
 
 @Entity
 @Table(name="buyer_records")
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "emailId")
 public class Buyer {
     /*
      * id <PK> : Integer String email name: Name gender: enum mobileNumber : int
@@ -37,7 +40,7 @@ public class Buyer {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @JsonBackReference  // to avoid bi-cyclic process during db calling
+  //  @JsonBackReference  // to avoid bi-cyclic process during db calling
     @OneToMany(mappedBy = "buyer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     List<Wallet> walletList;
 

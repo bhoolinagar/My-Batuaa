@@ -20,8 +20,8 @@ import java.util.List;
 @RequestMapping("/transaction/api/v2")
 public class TransactionController {
 
-    //    @Autowired
-    private final TransactionService transactionService;
+    //   @Autowired
+    private TransactionService transactionService;
 
     @Autowired
     public TransactionController(TransactionService transactionService) {

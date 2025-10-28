@@ -81,5 +81,27 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
             where upper(t.fromWallet.buyer.emailId) = upper(:emailId) or upper(t.toWallet.buyer.emailId) = upper(:emailId1) and upper(t.fromWallet.walletId) = upper(:walletId) or upper(t.toWallet.walletId) = upper(:walletId1)""")
     List<Transaction> findByEmailAndWallet(@Param("emailId") String emailId, @Param("emailId1") String emailId1, @Param("walletId") String walletId, @Param("walletId1") String walletId1);
 
+//    trasaction data for download
+//@Query(value = "SELECT * FROM transaction_records", nativeQuery = true)
+@Query(value = """
+        SELECT
+                                                                                     t.transaction_id,
+                                                                                     t.from_wallet_id,
+                                                                                     t.to_wallet_id,
+                                                                                     t.from_email_id,
+                                                                                     t.to_email_id,
+                                                                                     t.amount,
+                                                                                     t.timestamp,
+                                                                                     t.status,
+                                                                                     t.remarks,
+                                                                                     t.type
+                                                                                 FROM transaction_records t
+                                                                                 JOIN buyer_records fb ON t.from_email_id = fb.email_id
+                                                                                 JOIN buyer_records tb ON t.to_email_id = tb.email_id
+                                                                                 JOIN wallet_records fw ON t.from_wallet_id = fw.wallet_id
+                                                                                 JOIN wallet_records tw ON t.to_wallet_id = tw.wallet_id;
+""", nativeQuery = true)
+List<Transaction> findAllTransactionByAdminEmailAndRole();
+
 
 }
