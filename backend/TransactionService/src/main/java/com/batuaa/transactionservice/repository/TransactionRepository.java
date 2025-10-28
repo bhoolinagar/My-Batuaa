@@ -78,8 +78,22 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
 
     @Query("""
             select t from Transaction t
-            where upper(t.fromWallet.buyer.emailId) = upper(:emailId) or upper(t.toWallet.buyer.emailId) = upper(:emailId1) and upper(t.fromWallet.walletId) = upper(:walletId) or upper(t.toWallet.walletId) = upper(:walletId1)""")
-    List<Transaction> findByEmailAndWallet(@Param("emailId") String emailId, @Param("emailId1") String emailId1, @Param("walletId") String walletId, @Param("walletId1") String walletId1);
+            where upper(t.fromWallet.buyer.emailId) = upper(:emailId) or upper(t.toWallet.buyer.emailId) = upper(:emailId1) and 
+            upper(t.fromWallet.walletId) = upper(:walletId) or upper(t.toWallet.walletId) = upper(:walletId1)""")
 
+    List<Transaction> findByEmailAndWallet(@Param("emailId") String emailId, @Param("emailId1") String emailId1,
+                                           @Param("walletId") String walletId, @Param("walletId1") String walletId1);
+
+
+    @Query(value = "SELECT * FROM transaction_records " +
+            "WHERE type = 'WITHDRAWN'" + "AND from_email_id = ?1 AND from_wallet_id = ?2",
+            nativeQuery = true)
+
+    List<Transaction>  findByFromEmailAndPrimaryWallet(String emailId,String walletId);
+
+    @Query(value = "SELECT * FROM transaction_records " +
+            "WHERE type = 'RECEIVED'" + "AND to_email_id = ?1 AND to_wallet_id = ?2",
+            nativeQuery = true)
+    List<Transaction>  findByToEmailAndToWallet(String emailId,String walletId);
 
 }

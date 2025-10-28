@@ -247,7 +247,11 @@ public TranscationSerivceImp(TransactionRepository transactionRepository, Wallet
 
     @Override
     public List<Transaction> getAllTransactions(String emailId, String walletId) {
-        List<Transaction> result = transactionRepository.findByEmailAndWallet(emailId, emailId, walletId, walletId);
+        //List<Transaction> result = transactionRepository.findByEmailAndWallet(emailId, emailId, walletId, walletId);
+        List<Transaction> result = transactionRepository.findByFromEmailAndPrimaryWallet(emailId, walletId);
+        List<Transaction> resultToEmail =  transactionRepository.findByToEmailAndToWallet(emailId, walletId);
+
+        Boolean fromEmailToEmail = result.addAll(resultToEmail);
 
         if (result.isEmpty()) {
             throw new EmptyTransactionListException("No transactions found for wallet: " + walletId);
