@@ -4,6 +4,7 @@ import com.batuaa.transactionservice.dto.TransactionDateRangeDto;
 import com.batuaa.transactionservice.dto.TransactionRemarkDto;
 import com.batuaa.transactionservice.dto.TransactionTypeDto;
 import com.batuaa.transactionservice.dto.TransferDto;
+import com.batuaa.transactionservice.exception.InvalidEmailAddressException;
 import com.batuaa.transactionservice.model.Role;
 import com.batuaa.transactionservice.model.Transaction;
 
@@ -12,7 +13,7 @@ import java.util.List;
 public interface TransactionService {
 
     // Transfer money from one wallet to another
-    Transaction transferWalletToWallet(TransferDto transferDto);
+    Transaction transferWalletToWallet(TransferDto transferDto) throws InvalidEmailAddressException;
 
     // Find transactions by walletId within a specific date range
     List<Transaction> findByWalletIdAndDateBetween(TransactionDateRangeDto transactionDateRangeDto);

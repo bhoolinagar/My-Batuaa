@@ -68,6 +68,12 @@ public TranscationSerivceImp(TransactionRepository transactionRepository, Wallet
                 throw new InvalidWalletTransactionException("Sender and Receiver wallets cannot be the same.");
             }
 
+            // Validating that provided receiver email matches the wallet’s ToBuyer email
+            if (!walletTo.getBuyer().getEmailId().equalsIgnoreCase(transferDto.getToBuyerEmailId())) {
+                throw new InvalidEmailAddressException("Receiver email does not match the provided wallet ID.");
+            }
+
+
             // Check for duplicate transaction
             Optional<Transaction> existingTransaction = transactionRepository
                     .findByFromWalletAndToWalletAndAmountAndStatus(
@@ -88,8 +94,7 @@ public TranscationSerivceImp(TransactionRepository transactionRepository, Wallet
                         Status.FAILED, (transferDto.getRemarks() != null && !transferDto.getRemarks().trim().isEmpty())
                         ? transferDto.getRemarks()
                         : "Transfer failed: Insufficient funds in your wallet.",
-                        Type.WITHDRAWN
-                );
+                        Type.WITHDRAWN);
 
                 log.warn("Transfer failed due to insufficient funds | Wallet: {}, Amount: {}",
                         transferDto.getFromWalletId(), transferDto.getAmount());
@@ -139,17 +144,10 @@ public TranscationSerivceImp(TransactionRepository transactionRepository, Wallet
             }
             throw e;
 
-        }
-        catch (Exception e) {
+        } catch (InvalidEmailAddressException e) {
             log.error("Unexpected error during wallet transfer | From: {}, To: {}, Amount: {}, Error: {}",
                     transferDto.getFromWalletId(), transferDto.getToWalletId(), transferDto.getAmount(), e.getMessage(), e);
-
-            if (senderTransaction != null) {
-                senderTransaction.setStatus(Status.FAILED);
-                senderTransaction.setRemarks("Unexpected error: " + e.getMessage());
-                transactionRepository.save(senderTransaction);
-            }
-            throw new UnableToAddMoneyException("Error occurred while transferring money", e);
+            throw new RuntimeException(e.getMessage());
         }
     }
 

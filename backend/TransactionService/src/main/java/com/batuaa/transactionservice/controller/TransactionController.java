@@ -2,6 +2,7 @@ package com.batuaa.transactionservice.controller;
 
 import com.batuaa.transactionservice.dto.*;
 import com.batuaa.transactionservice.exception.EmptyTransactionListException;
+import com.batuaa.transactionservice.exception.InvalidEmailAddressException;
 import com.batuaa.transactionservice.model.Role;
 import com.batuaa.transactionservice.model.Transaction;
 import com.batuaa.transactionservice.service.TransactionService;
@@ -44,18 +45,18 @@ public class TransactionController {
      * Transfer money from one wallet to another
      */
     @PostMapping("/transfer-wallet")
-    public ResponseEntity<ApiResponse> transferWalletToWallet(@Valid @RequestBody TransferDto transferDto) {
+    public ResponseEntity<ApiResponse> transferWalletToWallet(@Valid @RequestBody TransferDto transferDto) throws InvalidEmailAddressException {
         log.info("Initiating wallet-to-wallet transfer: {}", transferDto);
+        ApiResponse response;
         Transaction transaction = transactionService.transferWalletToWallet(transferDto);
-        ApiResponse response = new ApiResponse("success", "Transaction completed successfully", transaction);
+        response = new ApiResponse("success", "Transaction completed successfully", transaction);
         return ResponseEntity.ok(response);
     }
 
     /**
      * View transaction by remark and transactionId
      */
-//    HTTP GET doesn’t support a body, so @RequestBody TransactionRemarkDto won’t work
-//     solution figured was to use @ModelAttribute, which binds query parameters to a DTO automatically.
+
     @PostMapping("/view-transactions-by-remark")
     public ResponseEntity<ApiResponse> viewTransactionByRemark(
             @Valid @RequestBody TransactionRemarkDto transactionRemarkDto) {
@@ -63,13 +64,6 @@ public class TransactionController {
         log.info("Filtering transactions by remark: {}"
                 , transactionRemarkDto.getRemark());
         List<Transaction> transactions = transactionService.filterTransactionsByRemark(transactionRemarkDto);
-
-        /*return ResponseEntity.ok(ApiResponse.builder()
-                ."success"
-                .message("Filtered transactions successfully")
-                .data(transactions)
-                .build());
- */
 
         ApiResponse response = new ApiResponse(
                 "success",

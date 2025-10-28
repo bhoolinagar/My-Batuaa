@@ -18,11 +18,12 @@ export default function TransferMoney() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Get email and primary wallet from state or session
+  // Get email and primary wallet from state|session
   const { email, primaryWalletId } = location.state || {};
   const fromBuyerEmail = email || sessionStorage.getItem("email");
   const token = sessionStorage.getItem("token");
- console.log(" token "+ token+"  walletId "+ primaryWalletId)
+  console.log(" token " + token + "  walletId " + primaryWalletId);
+
   const [loading, setLoading] = useState(true);
   const [wallets, setWallets] = useState([]);
   const [message, setMessage] = useState("");
@@ -30,11 +31,12 @@ export default function TransferMoney() {
   const [formData, setFormData] = useState({
     fromWalletId: primaryWalletId || "",
     toWalletId: "",
+    toBuyerEmailId: "",
     amount: "",
     remarks: "",
   });
 
-  // Fetch wallets on mount
+  // Fetching wallets on mount
   useEffect(() => {
     if (!token) {
       navigate("/login");
@@ -48,9 +50,12 @@ export default function TransferMoney() {
     }
 
     axios
-      .get(`http://localhost:8031/wallet/api/v1/wallet-list/${encodeURIComponent(fromBuyerEmail)}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      .get(
+        `http://localhost:8031/wallet/api/v1/wallet-list/${encodeURIComponent(fromBuyerEmail)}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      )
       .then((res) => {
         const apiResponse = res.data;
         console.log("Wallet list response:", apiResponse);
@@ -58,7 +63,7 @@ export default function TransferMoney() {
         if (apiResponse.status === "success" && apiResponse.data?.length > 0) {
           setWallets(apiResponse.data);
 
-          // Set default fromWalletId if not provided via props
+          // Setting default fromWalletId.
           if (!formData.fromWalletId) {
             setFormData((prev) => ({
               ...prev,
@@ -83,147 +88,173 @@ export default function TransferMoney() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.fromWalletId || !formData.toWalletId || !formData.amount) {
+    if (
+      !formData.fromWalletId ||
+      !formData.toWalletId ||
+      !formData.toBuyerEmailId ||
+      !formData.amount
+    ) {
       setMessage("Please fill all required fields.");
       return;
     }
 
     setLoading(true);
     try {
-      // Get receiver email by walletId
-      const emailRes = await axios.get(
-        `http://localhost:8031/wallet/api/v1/details/${formData.toWalletId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      const receiverEmail = emailRes.data.data?.buyerEmail;
-      if (!receiverEmail) {
-        throw new Error("Receiver wallet not found.");
-      }
-
       const payload = {
         fromWalletId: formData.fromWalletId,
         toWalletId: formData.toWalletId,
+        toBuyerEmailId: formData.toBuyerEmailId,
         amount: parseFloat(formData.amount),
         remarks: formData.remarks,
         fromBuyerEmailId: fromBuyerEmail,
-        toBuyerEmailId: receiverEmail,
       };
+
       console.log("Submitting transfer payload:", payload);
 
-      const res = await axios.post(
-        "http://localhost:8086/transaction/api/v2/transfer-wallet",
-        payload,
+      const res = await axios.post(`http://localhost:8086/transaction/api/v2/transfer-wallet`,payload,
         {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+          headers: {"Content-Type": "application/json",Authorization: `Bearer ${token}`,},
         }
       );
 
       setMessage(res.data.message || "Transaction successful!");
-      setFormData((prev) => ({ ...prev, toWalletId: "", amount: "", remarks: "" }));
+      setFormData((prev) => ({
+        ...prev,
+        toWalletId: "",
+        toBuyerEmailId:"",
+        amount: "",
+        remarks: "",
+      }));
     } catch (err) {
       console.error("Transaction error:", err);
-      setMessage(err.response?.data?.message || err.message || "Transaction failed.");
+      console.log("Full backend error response:", err.response?.data);
+
+      const backendMessage =
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        err.response?.data?.details ||
+        err.message ||
+        "Transaction failed. Please try again.";
+
+      if (backendMessage?.toLowerCase().includes("receiver")) {
+        setMessage(
+          "Receiver email and wallet ID do not match. Please verify the details."
+        );
+      } else {
+        setMessage(backendMessage);
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  if (loading) return <CircularProgress sx={{ mt: 10, color: "#0F3A6E" }} />;
+  if (loading)
+    return <CircularProgress sx={{ mt: 10, color: "#0F3A6E" }} />;
 
   return (
     <div>
-      <Navbar/>
-    <form onSubmit={handleSubmit} className="add-money-form">
-      <Box className="form-title">Transfer Money</Box>
+      <Navbar />
+      <form onSubmit={handleSubmit} className="add-money-form">
+        <Box className="form-title">Transfer Money</Box>
 
-      <div className="input-container">
-        <TextField
-          label="From Wallet ID"
-          name="fromWalletId"
-          value={formData.fromWalletId}
-          fullWidth
-          InputProps={{ readOnly: true }}
-        />
-      </div>
+        <div className="input-container">
+          <TextField
+            label="From Wallet ID"
+            name="fromWalletId"
+            value={formData.fromWalletId}
+            fullWidth
+            InputProps={{ readOnly: true }}
+          />
+        </div>
 
-      <div className="input-container">
-        <TextField
-          required
-          label="Receiver Wallet ID"
-          name="toWalletId"
-          value={formData.toWalletId}
-          onChange={handleChange}
-          fullWidth
-        />
-      </div>
+        <div className="input-container">
+          <TextField
+            required
+            label="Receiver Wallet ID"
+            name="toWalletId"
+            value={formData.toWalletId}
+            onChange={handleChange}
+            fullWidth
+          />
+        </div>
 
-      <div className="input-container">
-        <TextField
-          required
-          label="Amount"
-          name="amount"
-          value={formData.amount}
-          onChange={handleChange}
-          placeholder="100.00"
-          fullWidth
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <CurrencyRupeeIcon sx={{ color: "#0F3A6E", fontSize: 30 }} />
-              </InputAdornment>
-            ),
-          }}
-        />
-      </div>
+        <div className="input-container">
+          <TextField
+            required
+            label="Receiver Email"
+            name="toBuyerEmailId"
+            value={formData.toBuyerEmailId}
+            onChange={handleChange}
+            placeholder="receiver@example.com"
+            type="email"
+            fullWidth
+          />
+        </div>
 
-      <div className="input-container">
-        <TextField
-          label="Remarks"
-          name="remarks"
-          value={formData.remarks}
-          onChange={handleChange}
-          placeholder="Optional Remarks"
-          fullWidth
-        />
-      </div>
+        <div className="input-container">
+          <TextField
+            required
+            label="Amount"
+            name="amount"
+            value={formData.amount}
+            onChange={handleChange}
+            placeholder="100.00"
+            fullWidth
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <CurrencyRupeeIcon sx={{ color: "#0F3A6E", fontSize: 30 }} />
+                </InputAdornment>
+              ),
+            }}
+          />
+        </div>
 
-      <Button
-        type="submit"
-        variant="contained"
-        endIcon={<ArrowForwardIcon />}
-        sx={{
-          width: "50%",
-          height: 50,
-          mt: 2,
-          py: 1.5,
-          px: 4,
-          borderRadius: "40px",
-          backgroundColor: "#0F3A6E",
-          textTransform: "none",
-          fontSize: 20,
-          fontWeight: 600,
-          fontFamily: "Roboto Mono, monospace",
-          "&:hover": { backgroundColor: "#0d2e59" },
-        }}
-      >
-        Submit
-      </Button>
+        <div className="input-container">
+          <TextField
+            label="Remarks"
+            name="remarks"
+            value={formData.remarks}
+            onChange={handleChange}
+            placeholder="Optional Remarks"
+            fullWidth
+          />
+        </div>
 
-      {message && (
-        <Box
+        <Button
+          type="submit"
+          variant="contained"
+          endIcon={<ArrowForwardIcon />}
           sx={{
+            width: "50%",
+            height: 50,
             mt: 2,
-            color: message.includes("successful") ? "green" : "red",
+            py: 1.5,
+            px: 4,
+            borderRadius: "40px",
+            backgroundColor: "#0F3A6E",
+            textTransform: "none",
+            fontSize: 20,
+            fontWeight: 600,
+            fontFamily: "Roboto Mono, monospace",
+            "&:hover": { backgroundColor: "#0d2e59" },
           }}
         >
-          {message}
-        </Box>
-      )}
-    </form>
-    <Footer/>
+          Submit
+        </Button>
+
+        {message && (
+          <Box
+            sx={{
+              mt: 2,
+              color: message.includes("successful") ? "green" : "red",
+            }}
+          >
+            {message}
+          </Box>
+        )}
+      </form>
+      <Footer />
     </div>
   );
 }

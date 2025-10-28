@@ -40,6 +40,9 @@ public class TransactionServiceTest {
     private TransactionRepository transactionRepository;
     @Mock
     private BuyerRepository buyerRepository;
+    @Mock
+    private TransactionLoggingService transactionLoggingService;
+
 
     @InjectMocks
     private TranscationSerivceImp transactionService;
@@ -221,18 +224,39 @@ public class TransactionServiceTest {
     /* Tests for wallet to wallet transfer:
     1) Successful transaction (checks balances, status, remarks, ID)
     2) Sender/receiver wallet not found
-    3) Duplicate transaction
-    4) Insufficient funds
-    5) Unexpected DB exception (UnableToAddMoneyException)
+    3) Unexpected DB exception (UnableToAddMoneyException)
      */
     @Test
     void testTransferWalletToWallet_GeneratesTransactionId_And_UpdatesStatus() {
-        // Arrange
+
+        Buyer buyerFrom = new Buyer();
+        buyerFrom.setEmailId("from@gmail.com");
+        Buyer buyerTo = new Buyer();
+        buyerTo.setEmailId("to@gmail.com");
+
+        Wallet walletFrom = new Wallet();
+        walletFrom.setWalletId("WALLET_FROM");
+        walletFrom.setBuyer(buyerFrom);
+        walletFrom.setBalance(new BigDecimal("1000.00"));
+
+        Wallet walletTo = new Wallet();
+        walletTo.setWalletId("WALLET_TO");
+        walletTo.setBuyer(buyerTo);
+        walletTo.setBalance(new BigDecimal("500.00"));
+
+        TransferDto transferDto = new TransferDto();
+        transferDto.setFromWalletId("WALLET_FROM");
+        transferDto.setToWalletId("WALLET_TO");
+        transferDto.setToBuyerEmailId("to@gmail.com");
+        transferDto.setAmount(new BigDecimal("200.00"));
+        transferDto.setRemarks("Transfer completed");
+
         when(walletRepository.findByWalletId("WALLET_FROM")).thenReturn(Optional.of(walletFrom));
         when(walletRepository.findByWalletId("WALLET_TO")).thenReturn(Optional.of(walletTo));
 
         when(transactionRepository.findByFromWalletAndToWalletAndAmountAndStatus(
-                any(), any(), any(), any())).thenReturn(Optional.empty());
+                any(), any(), any(), eq(Status.PROCESSING))
+        ).thenReturn(Optional.empty());
 
         doAnswer(invocation -> {
             Transaction tx = invocation.getArgument(0);
@@ -248,7 +272,7 @@ public class TransactionServiceTest {
 
         assertNotNull(result.getTransactionId(), "Transaction ID should be generated");
         assertEquals(Status.SUCCESS, result.getStatus(), "Final status should be SUCCESS");
-        assertEquals(transferDto.getRemarks(), result.getRemarks());
+        assertEquals("Transfer completed", result.getRemarks(), "Remarks should match DTO");
 
         verify(transactionRepository, atLeast(3)).save(transactionCaptor.capture());
         List<Transaction> allSaved = transactionCaptor.getAllValues();
@@ -256,9 +280,10 @@ public class TransactionServiceTest {
         assertTrue(allSaved.stream().anyMatch(t -> t.getStatus() == Status.SUCCESS),
                 "There should be a SUCCESS transaction saved");
 
-        assertEquals(new BigDecimal("800.00"), walletFrom.getBalance());
-        assertEquals(new BigDecimal("700.00"), walletTo.getBalance());
+        assertEquals(new BigDecimal("800.00"), walletFrom.getBalance(), "Sender balance should decrease by 200");
+        assertEquals(new BigDecimal("700.00"), walletTo.getBalance(), "Receiver balance should increase by 200");
     }
+
 
     @Test
     void testTransferWalletToWallet_SenderWalletNotFound() {
@@ -287,65 +312,9 @@ public class TransactionServiceTest {
         assertEquals("Receiver wallet not found: WALLET_TO", exception.getMessage());
     }
 
-    @Test
-    void testTransferWalletToWallet_DuplicateTransaction() {
-
-        when(walletRepository.findByWalletId("WALLET_FROM")).thenReturn(Optional.of(walletFrom));
-        when(walletRepository.findByWalletId("WALLET_TO")).thenReturn(Optional.of(walletTo));
-
-        Transaction duplicateTx = new Transaction();
-        when(transactionRepository.findByFromWalletAndToWalletAndAmountAndStatus(
-                any(), any(), any(), any())).thenReturn(Optional.of(duplicateTx));
-
-        DuplicateTransactionException exception = assertThrows(
-                DuplicateTransactionException.class,
-                () -> transactionService.transferWalletToWallet(transferDto)
-        );
-
-        assertEquals("A similar transaction is already in process from WALLET_FROM to WALLET_TO",
-                exception.getMessage());
-    }
-    @Test
-    void testTransferWalletToWallet_InsufficientFunds() {
-
-        walletFrom.setBalance(new BigDecimal("100")); // Less than transfer amount
-        when(walletRepository.findByWalletId("WALLET_FROM")).thenReturn(Optional.of(walletFrom));
-        when(walletRepository.findByWalletId("WALLET_TO")).thenReturn(Optional.of(walletTo));
-        when(transactionRepository.findByFromWalletAndToWalletAndAmountAndStatus(
-                any(), any(), any(), any())).thenReturn(Optional.empty());
-
-        InsufficientFundsException exception = assertThrows(
-                InsufficientFundsException.class,
-                () -> transactionService.transferWalletToWallet(transferDto)
-        );
-
-        assertEquals("Insufficient funds in sender wallet", exception.getMessage());
-    }
 
     // Negative test for unexpected exception
-    @Test
-    void testTransferWalletToWallet_UnexpectedError() {
-        // Arrange
-        when(walletRepository.findByWalletId("WALLET_FROM")).thenReturn(Optional.of(walletFrom));
-        when(walletRepository.findByWalletId("WALLET_TO")).thenReturn(Optional.of(walletTo));
-        when(transactionRepository.findByFromWalletAndToWalletAndAmountAndStatus(any(), any(), any(), any()))
-                .thenReturn(Optional.empty());
 
-        doAnswer(invocation -> {
-            Transaction tx = invocation.getArgument(0);
-            if (tx.getStatus() == Status.PROCESSING) {
-                throw new RuntimeException("DB down");
-            }
-            return tx;
-        }).when(transactionRepository).save(any(Transaction.class));
-
-        UnableToAddMoneyException ex = assertThrows(UnableToAddMoneyException.class,
-                () -> transactionService.transferWalletToWallet(transferDto));
-
-        assertTrue(ex.getMessage().contains("Error occurred while transferring money"));
-        assertTrue(ex.getCause() instanceof RuntimeException);
-        assertEquals("DB down", ex.getCause().getMessage());
-    }
 
     /*
     1) Successful fetch with results

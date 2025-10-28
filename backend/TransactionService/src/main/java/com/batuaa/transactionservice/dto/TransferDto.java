@@ -17,8 +17,7 @@ public class TransferDto {
 //    @DecimalMin(value = "0.01", message = "Amount must be greater than 0")
     private BigDecimal amount;
     private String remarks;
-    //    Currently keeping the emailIds , as the code was breaking if the email address was not found or
-//    was invalid/incorrect format | Can be removed will not affect the code if email is passed via session
+
     @NotBlank(message = "Sender email cannot be blank")
     @Email(message = "Invalid sender email format")
     private String fromBuyerEmailId;
@@ -43,6 +42,13 @@ public class TransferDto {
         return toWalletId;
     }
 
+    public String getFromBuyerEmailId() {
+        return fromBuyerEmailId;
+    }
+
+    public String getToBuyerEmailId() {
+        return toBuyerEmailId;
+    }
 
     public BigDecimal getAmount() {
         return amount;

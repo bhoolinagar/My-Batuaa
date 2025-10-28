@@ -8,12 +8,19 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.DateTimeException;
 import java.util.stream.Collectors;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(InvalidEmailAddressException.class)
+    public ResponseEntity<ApiResponse<Object>> handleInvalidEmailInput(InvalidEmailAddressException ex) {
+        ApiResponse<Object> response = new ApiResponse<>("fail", ex.getMessage(), null);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
 
     @ExceptionHandler(org.hibernate.StaleStateException.class)
     public ResponseEntity<ApiResponse> handleStaleStateException(org.hibernate.StaleStateException ex) {
@@ -22,7 +29,6 @@ public class GlobalExceptionHandler {
     }
     @ExceptionHandler(InsufficientFundsException.class)
     public ResponseEntity<ApiResponse<Object>> handleInsufficientFunds(InsufficientFundsException ex) {
-
         ApiResponse<Object> response = new ApiResponse<>("fail", ex.getMessage(), null);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
