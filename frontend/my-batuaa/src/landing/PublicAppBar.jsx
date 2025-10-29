@@ -28,7 +28,7 @@ const handleCloseNavMenu = () => {
 
 return (
 <>
- <AppBar sx={{ backgroundColor: "white", boxShadow: 2 }}>
+ <AppBar sx={{ backgroundColor: "white", boxShadow: 2, height: "70px",}}>
         <Container maxWidth="xl">
           <Toolbar disableGutters>
             {/* Left Section: Logo */}
