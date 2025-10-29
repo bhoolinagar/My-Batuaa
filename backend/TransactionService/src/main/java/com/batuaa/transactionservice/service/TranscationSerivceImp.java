@@ -316,8 +316,8 @@ public TranscationSerivceImp(TransactionRepository transactionRepository, Wallet
         }
 
         // Fetch all transactions
-        List<Transaction> transactions = transactionRepository.findAll();
-
+      //  List<Transaction> transactions = transactionRepository.findAll();
+        List<Transaction> transactions = transactionRepository.findAllTransactionByAdminEmailAndRole();
         if (transactions.isEmpty()) {
             throw new EmptyTransactionListException("No transactions found.");
         }
