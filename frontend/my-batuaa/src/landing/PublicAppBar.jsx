@@ -44,7 +44,7 @@ return (
               <img
                 src={logo}
                 alt="logo"
-                style={{ width: 100, height: 90, marginRight: 8 }}
+                style={{ width: 80, height: 70, marginRight: 8 }}
               />
             </Box>
 
@@ -58,7 +58,7 @@ return (
                 <img
                   src={register}
                   alt="register_logo"
-                  style={{ width: 40, height: 40 }}
+                  style={{ width: 30, height: 30 }}
                 />
                 <Typography
                   variant="caption"
@@ -80,7 +80,7 @@ return (
                 <img
                   src={login}
                   alt="login_logo"
-                  style={{ width: 40, height: 40 }}
+                  style={{ width: 30, height: 30 }}
                 />
                 <Typography
                   variant="caption"
