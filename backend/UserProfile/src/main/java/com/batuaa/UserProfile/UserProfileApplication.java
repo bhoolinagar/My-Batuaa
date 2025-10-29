@@ -1,4 +1,4 @@
-package com.batuaa.userprofile;
+package com.batuaa.UserProfile;
 
 import com.batuaa.userprofile.filter.BuyerFilter;
 import org.springframework.boot.SpringApplication;
