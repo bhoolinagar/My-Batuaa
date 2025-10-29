@@ -17,7 +17,6 @@ import Transactions from './component/TransactionHistory.jsx'
 
 function App() {
   return (
-
     <BrowserRouter>
       <Routes>
         {/* Public Routes */}

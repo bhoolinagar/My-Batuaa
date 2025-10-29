@@ -115,8 +115,7 @@ const [formData, setFormData] = useState({
   };
   return (
     <div>
-      <Navbar></Navbar>
-      
+      <Navbar></Navbar>  
     <form onSubmit={handleSubmit} className="add-money-form">
       <Box className="form-title">Add New Wallet</Box>
 

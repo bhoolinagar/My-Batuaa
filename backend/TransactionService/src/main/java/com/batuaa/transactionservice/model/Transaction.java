@@ -2,6 +2,9 @@ package com.batuaa.transactionservice.model;
 
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -10,34 +13,36 @@ import java.time.LocalDateTime;
 
 
 @Entity
-@Table(name = "transaction_records") // corrected name for proper mapping with db.
+@Table(name = "transaction_records")// corrected name for proper mapping with db.
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "transactionId")
 public class Transaction {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer transactionId;  // Auto-generated PK
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "from_wallet_id", referencedColumnName = "wallet_id")
-    @JsonBackReference
+    //@JsonBackReference
     private Wallet fromWallet;      // FK to source Wallet
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "to_wallet_id", referencedColumnName = "wallet_id")
-    @JsonBackReference
+    // @JsonBackReference
     private Wallet toWallet;
 
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "from_email_id", referencedColumnName = "email_id")
-    @JsonBackReference
+    // @JsonBackReference
     private Buyer fromBuyer;      // FK to source Wallet
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "to_email_id", referencedColumnName = "email_id")
-    @JsonBackReference
+    // @JsonBackReference
     private Buyer toBuyer;
     // FK to destination Wallet
     private BigDecimal amount;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime timestamp; // Full date & time
     @Enumerated(EnumType.STRING)
     private Status status; // SUCCESS, PROCESSING, FAILED

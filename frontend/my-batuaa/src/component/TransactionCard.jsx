@@ -42,6 +42,7 @@ const goToTranscationFilter = (primarywallet) => {
 
   return (
     <div>
+    
       <Typography variant="h5" sx={{ mb: 2 }} align="left">
         Recent Transactions History
       </Typography>

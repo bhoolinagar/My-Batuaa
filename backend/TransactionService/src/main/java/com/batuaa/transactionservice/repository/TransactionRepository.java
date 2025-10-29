@@ -22,8 +22,8 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
 
     @Query("""
         SELECT t FROM Transaction t
-        WHERE (UPPER(t.fromWallet.walletId) = UPPER(:walletId)
-               OR UPPER(t.toWallet.walletId) = UPPER(:walletId))
+        WHERE ((UPPER(t.fromWallet.walletId) = UPPER(:walletId) AND t.type='WITHDRAWN')
+               OR (UPPER(t.toWallet.walletId) = UPPER(:walletId)) AND t.type='RECEIVED')
           AND t.timestamp BETWEEN :startTime AND :endTime
         ORDER BY t.timestamp DESC
     """)
@@ -47,12 +47,27 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
     List<Transaction> findByWalletIdAndType(@Param("walletId") String walletId, @Param("walletId1") String walletId1, @Param("type") Type type);
 
 
-    @Query(
-            value = "SELECT * FROM transaction_records t " +
-                    "WHERE (UPPER(t.from_wallet_id) = UPPER(:walletId) OR UPPER(t.to_wallet_id) = UPPER(:walletId)) " +
-                    "AND (UPPER(t.from_email_id) = UPPER(:emailId) OR UPPER(t.to_email_id) = UPPER(:emailId)) " +
-                    "AND LOWER(t.remarks) LIKE LOWER(CONCAT('%', :keyword, '%'))",
-            nativeQuery = true)
+//    @Query(
+//            value = "SELECT * FROM transaction_records t " +
+//                    "WHERE (UPPER(t.from_wallet_id) = UPPER(:walletId) OR UPPER(t.to_wallet_id) = UPPER(:walletId)) " +
+//                    "AND (UPPER(t.from_email_id) = UPPER(:emailId) OR UPPER(t.to_email_id) = UPPER(:emailId)) " +
+//                    "AND LOWER(t.remarks) LIKE LOWER(CONCAT('%', :keyword, '%'))",
+//            nativeQuery = true)
+@Query(value = """
+    SELECT * FROM transaction_records t
+    WHERE 
+        (
+            UPPER(t.from_wallet_id) = UPPER(:walletId)
+            AND t.type = 'WITHDRAWN'
+            AND LOWER(t.remarks) LIKE LOWER(CONCAT('%', :keyword, '%'))
+        )
+        OR
+        (
+            UPPER(t.to_wallet_id) = UPPER(:walletId)
+            AND t.type = 'RECEIVED'
+            AND LOWER(t.remarks) LIKE LOWER(CONCAT('%', :keyword, '%'))
+        )
+    """, nativeQuery = true)
     List<Transaction> findByWalletAndEmailAndRemarkNative(
             @Param("walletId") String walletId,
             @Param("emailId") String emailId,

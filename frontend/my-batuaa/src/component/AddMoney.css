@@ -1,5 +1,4 @@
 .add-money-form {
-  
   position: fixed;
   top: 50%;
   left: 50%;
@@ -13,7 +12,7 @@
   background-color: #f3f5f9;
   padding: 40px 50px;
   border-radius: 40px;
-  width: 450px;
+  width: 60vw;
 
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
  

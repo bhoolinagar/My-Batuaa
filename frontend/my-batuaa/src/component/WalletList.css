@@ -1,12 +1,13 @@
 
 .wallet-list-container {
+  
   display: flex;
   flex-direction: row;
   justify-content: center;
   align-items: flex-start;
   flex-wrap: wrap;
   gap: 30px;
-  padding: 40px 40px 20px 20px;        /* More balanced padding */
+  padding: 40px 20px ;        /* More balanced padding */
   min-height: 30%;          /* Keeps layout consistent in height */
   background-color: #f9f9f9; /* Optional: soft dashboard background */
   box-sizing: border-box;
@@ -14,7 +15,7 @@
 }
 
 .wallet-card {
-  max-width: 350px;
+  max-width: 250px;
   color: #0f3a6e;
   border-radius: 20%;
  /* border-radius: 40px; /* same as sx={4} */
@@ -23,8 +24,8 @@
 }
 
 .wallet-image {
-  width: 120px;
-  height: 120px;
+  width: 100px;
+  height: 100px;
   display: block;
   margin: 0 auto;
 }
@@ -63,4 +64,18 @@
   gap: 5;
   padding: 2;
   bottom: 5%;
+}
+
+.white-text {
+  color: white;
+  text-align: left;
+  word-spacing: 3px;        /* spacing between words */
+  letter-spacing: 0.5px;    /* subtle spacing between letters */
+  line-height: 1.6;         /* improves readability */
+  margin-bottom: 8px;       /* adds space between Typography lines */
+}
+
+/*if you need more space between specific lines */
+.white-text.spaced {
+  margin-bottom: 16px;
 }

@@ -9,6 +9,7 @@ import com.batuaa.transactionservice.model.*;
 import com.batuaa.transactionservice.repository.BuyerRepository;
 import com.batuaa.transactionservice.repository.TransactionRepository;
 import com.batuaa.transactionservice.repository.WalletRepository;
+import jakarta.mail.MessagingException;
 import jakarta.transaction.InvalidTransactionException;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -20,13 +21,12 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -38,16 +38,23 @@ private  final TransactionRepository transactionRepository;
 private final WalletRepository walletRepository;
 
 private BuyerRepository buyerRepository;
+private EmailService emailService;
 
 @Autowired
 private TransactionLoggingService transactionLoggingService;
-
 @Autowired
-public TranscationSerivceImp(TransactionRepository transactionRepository, WalletRepository walletRepository, BuyerRepository buyerRepository) {
+    public TranscationSerivceImp(TransactionRepository transactionRepository, WalletRepository walletRepository, BuyerRepository buyerRepository, TransactionLoggingService transactionLoggingService, EmailService emailService) {
         this.transactionRepository = transactionRepository;
         this.walletRepository = walletRepository;
-    this.buyerRepository = buyerRepository;
+        this.buyerRepository = buyerRepository;
+       this.emailService = emailService;
+        this.transactionLoggingService = transactionLoggingService;
     }
+
+
+
+
+
 // wallet to wallet transfer
 
     @Override
@@ -125,6 +132,12 @@ public TranscationSerivceImp(TransactionRepository transactionRepository, Wallet
 
             log.info("Wallet transfer successful | From: {}, To: {},Amount: {}", transferDto.getFromWalletId(), transferDto.getToWalletId(), transferDto.getAmount());
 
+            /// to send email to sender  and receiver for transaction
+            processTransaction(senderTransaction.getTransactionId(),senderTransaction.
+                getFromBuyer().getEmailId(),transferDto.getAmount());
+//process to sent email to receiver for transaction
+          processTransaction(receiverTransaction.getTransactionId(),receiverTransaction.
+                  getFromBuyer().getEmailId(),transferDto.getAmount());
             return senderTransaction;
 
         } catch (WalletNotFoundException | InsufficientFundsException | DuplicateTransactionException | InvalidWalletTransactionException e) {
@@ -247,7 +260,6 @@ public TranscationSerivceImp(TransactionRepository transactionRepository, Wallet
 
     }
 
-
     //    Filter Transactions By Remarks
     @Transactional
     @Override
@@ -324,4 +336,26 @@ public TranscationSerivceImp(TransactionRepository transactionRepository, Wallet
 
         return transactions;
     }
+
+    // helper function to genrate email
+    public void processTransaction( Integer transactionId, String receiverEmail, BigDecimal amount) throws MessagingException, MessagingException {
+        // 1 Process the transaction (logic to save in DB, etc.)
+
+        //String transactionId = "TXN" + System.currentTimeMillis();
+        LocalDateTime date = LocalDateTime.now();
+
+        // 2 Prepare email data
+        Map<String, Object> model = new HashMap<>();
+        model.put("name", "User");
+        model.put("transactionId", transactionId);
+        model.put("amount", amount);
+        model.put("date", date);
+
+        model.put("receiverEmail", receiverEmail);
+
+        // 3 Send emails to both sender and receiver
+      // emailService.sendTransactionEmail(senderEmail, model);
+       emailService.sendTransactionEmail(receiverEmail, model);
+    }
+
 }

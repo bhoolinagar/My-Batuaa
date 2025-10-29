@@ -5,6 +5,7 @@ import jakarta.servlet.ServletException;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.MailException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -120,5 +121,11 @@ public ResponseEntity<ApiResponse<Object>> handleJwtTokenNotfound(JwtTokenMissin
 
     }
 
+    @ExceptionHandler(MailException.class)
+    public  ResponseEntity<ApiResponse<Object>> handleFailEmail(MailException ex)
+    {
+        ApiResponse<Object> response = new ApiResponse<>("fail", ex.getMessage(), null);
+        return  ResponseEntity.status((HttpStatus.NOT_FOUND)).body(response);
+    }
 
 }

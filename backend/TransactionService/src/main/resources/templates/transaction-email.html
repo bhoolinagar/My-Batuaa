@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Transaction Details</title>
+    <style>
+        body { font-family: Arial, sans-serif; color: #333; }
+        .container { background-color: #f9f9f9; padding: 20px; border-radius: 10px; }
+        .highlight { color: #2b7a78; font-weight: bold; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Transaction Notification</h2>
+    <p>Dear <span class="highlight" th:text="${name}">User</span>,</p>
+    <p>Your transaction has been successfully processed.</p>
+
+    <p><strong>Transaction Details:</strong></p>
+    <ul>
+        <li>Transaction ID: <span th:text="${transactionId}"></span></li>
+        <li>Amount: ₹<span th:text="${amount}"></span></li>
+        <li>Date: <span th:text="${date}"></span></li>
+        <li>From: <span th:text="${senderEmail}"></span></li>
+        <li>To: <span th:text="${receiverEmail}"></span></li>
+    </ul>
+
+    <p>Thank you for using our service!</p>
+</div>
+</body>
+</html>

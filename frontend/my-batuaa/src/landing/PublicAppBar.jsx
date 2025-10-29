@@ -13,6 +13,7 @@ import logo from "../assets/logo.png"
 import login from "../assets/login_log.png";
 import register from "../assets/register_logo.png";
 import landing from "../assets/landing.png";
+
 export default function PublicAppBar(){
 const navigate = useNavigate();
 
@@ -28,7 +29,8 @@ const handleCloseNavMenu = () => {
 
 return (
 <>
- <AppBar sx={{ backgroundColor: "white", boxShadow: 2 }}>
+ <AppBar 
+ sx={{ backgroundColor: "white", boxShadow: 2 }}>
         <Container maxWidth="xl">
           <Toolbar disableGutters>
             {/* Left Section: Logo */}
