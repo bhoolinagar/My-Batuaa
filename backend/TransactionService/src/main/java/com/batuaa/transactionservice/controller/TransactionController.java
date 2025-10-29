@@ -20,7 +20,6 @@ import java.util.List;
 @RequestMapping("/transaction/api/v2")
 public class TransactionController {
 
-    //    @Autowired
     private final TransactionService transactionService;
 
     @Autowired
@@ -48,13 +47,6 @@ public class TransactionController {
     public ResponseEntity<ApiResponse> transferWalletToWallet(@Valid @RequestBody TransferDto transferDto) {
         log.info("Initiating wallet-to-wallet transfer: {}", transferDto);
         Transaction transaction = transactionService.transferWalletToWallet(transferDto);
-     /*   return ResponseEntity.ok(ApiResponse.builder()
-                .statusCode(200)
-                .message("Transaction completed successfully")
-                .data(transaction).build());
-
-      */
-
         ApiResponse response = new ApiResponse("success", "Transaction completed successfully", transaction);
         return ResponseEntity.ok(response);
     }

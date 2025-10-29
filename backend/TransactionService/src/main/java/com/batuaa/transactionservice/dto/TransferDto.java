@@ -1,9 +1,6 @@
 package com.batuaa.transactionservice.dto;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;
 
@@ -13,6 +10,8 @@ public class TransferDto {
 
     @NotBlank(message = "Receiver walletId cannot be blank")
     private String toWalletId;
+
+    @DecimalMax(value = "10000.00", message = "Transaction amount cannot exceed ₹10,000 per transaction")
     @NotNull(message = "Amount cannot be null")
     @Positive(message = "Amount must be greater than 0")
 //    @DecimalMin(value = "0.01", message = "Amount must be greater than 0")
@@ -23,6 +22,7 @@ public class TransferDto {
     @NotBlank(message = "Sender email cannot be blank")
     @Email(message = "Invalid sender email format")
     private String fromBuyerEmailId;
+
     @NotBlank(message = "Receiver email cannot be blank")
     @Email(message = "Invalid receiver email format")
     private String toBuyerEmailId;

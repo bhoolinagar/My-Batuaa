@@ -9,6 +9,7 @@ import com.batuaa.transactionservice.model.*;
 import com.batuaa.transactionservice.repository.BuyerRepository;
 import com.batuaa.transactionservice.repository.TransactionRepository;
 import com.batuaa.transactionservice.repository.WalletRepository;
+import jakarta.transaction.InvalidTransactionException;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,11 +32,16 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class TranscationSerivceImp implements TransactionService {
-    // have removed the @Autowired here as we are already doing it via a constructor and is not required at parameter level
+
+
 private  final TransactionRepository transactionRepository;
 private final WalletRepository walletRepository;
 
-    private BuyerRepository buyerRepository;
+private BuyerRepository buyerRepository;
+
+@Autowired
+private TransactionLoggingService transactionLoggingService;
+
 @Autowired
 public TranscationSerivceImp(TransactionRepository transactionRepository, WalletRepository walletRepository, BuyerRepository buyerRepository) {
         this.transactionRepository = transactionRepository;
@@ -56,6 +62,12 @@ public TranscationSerivceImp(TransactionRepository transactionRepository, Wallet
                     .orElseThrow(() -> new WalletNotFoundException(
                             "Receiver wallet not found: " + transferDto.getToWalletId()));
 
+            // Sender and receiver wallets should be different
+
+            if (walletFrom.getWalletId().equals(walletTo.getWalletId())) {
+                throw new InvalidWalletTransactionException("Sender and Receiver wallets cannot be the same.");
+            }
+
             // Check for duplicate transaction
             Optional<Transaction> existingTransaction = transactionRepository
                     .findByFromWalletAndToWalletAndAmountAndStatus(
@@ -67,11 +79,25 @@ public TranscationSerivceImp(TransactionRepository transactionRepository, Wallet
                                 transferDto.getFromWalletId() + " to " + transferDto.getToWalletId());
             }
 
+            // Check for insufficient funds before proceeding
             if (walletFrom.getBalance().compareTo(transferDto.getAmount()) < 0) {
-                throw new InsufficientFundsException("Insufficient funds in sender wallet");
+                // Logging the  transaction as failed for sender-only transaction
+                senderTransaction = new Transaction(
+                        walletFrom, walletTo, walletFrom.getBuyer(), walletTo.getBuyer(),
+                        transferDto.getAmount(), LocalDateTime.now(),
+                        Status.FAILED, (transferDto.getRemarks() != null && !transferDto.getRemarks().trim().isEmpty())
+                        ? transferDto.getRemarks()
+                        : "Transfer failed: Insufficient funds in your wallet.",
+                        Type.WITHDRAWN
+                );
+
+                log.warn("Transfer failed due to insufficient funds | Wallet: {}, Amount: {}",
+                        transferDto.getFromWalletId(), transferDto.getAmount());
+
+                throw new InsufficientFundsException("Insufficient funds in your selected wallet");
             }
 
-//             sender transaction
+            // Sender transaction
             senderTransaction = new Transaction(walletFrom, walletTo, walletFrom.getBuyer(), walletTo.getBuyer(),
                     transferDto.getAmount(), LocalDateTime.now(), Status.PROCESSING,
                     "Initiating transfer of Rs " + transferDto.getAmount() + " to wallet " + transferDto.getToWalletId(),
@@ -85,11 +111,11 @@ public TranscationSerivceImp(TransactionRepository transactionRepository, Wallet
             walletRepository.save(walletFrom);
             walletRepository.save(walletTo);
 
-            // transaction done successfully
+            // Transaction done successfully
             senderTransaction.setStatus(Status.SUCCESS);
             senderTransaction.setRemarks(transferDto.getRemarks());
             transactionRepository.save(senderTransaction);
-            //receiver transaction
+            // Receiver transaction
             Transaction receiverTransaction = new Transaction(walletFrom, walletTo, walletFrom.getBuyer(), walletTo.getBuyer(),
                     transferDto.getAmount(), LocalDateTime.now(), Status.SUCCESS,
                     transferDto.getRemarks(),
@@ -101,18 +127,20 @@ public TranscationSerivceImp(TransactionRepository transactionRepository, Wallet
 
             return senderTransaction;
 
-        } catch (WalletNotFoundException | InsufficientFundsException | DuplicateTransactionException e) {
+        } catch (WalletNotFoundException | InsufficientFundsException | DuplicateTransactionException | InvalidWalletTransactionException e) {
             log.error("Wallet transfer failed | From: {}, To: {},Amount: {} | Reason: {}",
                     transferDto.getFromWalletId(), transferDto.getToWalletId(), transferDto.getAmount(), e.getMessage(), e);
 
             if (senderTransaction != null) {
                 senderTransaction.setStatus(Status.FAILED);
                 senderTransaction.setRemarks("Transfer failed: " + e.getMessage());
-                transactionRepository.save(senderTransaction);
+                transactionLoggingService.logFailedTransaction(senderTransaction);
+
             }
             throw e;
 
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             log.error("Unexpected error during wallet transfer | From: {}, To: {}, Amount: {}, Error: {}",
                     transferDto.getFromWalletId(), transferDto.getToWalletId(), transferDto.getAmount(), e.getMessage(), e);
 
