@@ -13,13 +13,10 @@ const bull = (
   >
     •
   </Box>
-
-  
-);
-
+  );
 export default function BasicCardFourCorners(props) {
   return (
-<Card sx={{ width: '90%', padding: 2 }}>
+<Card sx={{ width: '90%',paddingRight:'5'  }}>
       <Box sx={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 2 }}>
         {/* Arrow image left */}
        {props.transaction.type === "RECEIVED" ? (

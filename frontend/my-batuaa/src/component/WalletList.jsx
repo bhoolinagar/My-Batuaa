@@ -113,10 +113,10 @@ const WalletDashboard = () => {
   if (loading) return <CircularProgress />;
 
   return (
-    <Box padding={10}>
+    <Box>
       <Navbar></Navbar>
-    <div className="p-6">
-      <Typography variant="h4" gutterBottom>
+    <div className="p-2">
+      <Typography variant="h5" gutterBottom>
         Buyer Profile
       </Typography>
      
@@ -157,8 +157,8 @@ const WalletDashboard = () => {
             >
               Wallet
             </Typography>
-            <Typography variant="body2" align="left" sx={{ color: "white" }}>
-              Email : {buyerEmail}
+            <Typography className="white-text">
+              Email: {buyerEmail}
             </Typography>
             <Box
               sx={{
@@ -169,9 +169,7 @@ const WalletDashboard = () => {
               }}
             >
               <Typography
-                variant="body2"
-                align="left"
-                sx={{ color: "white" }}
+               className="white-text"
               >
                 Wallet Id: {primaryWallet.walletId}
               </Typography>
@@ -190,36 +188,21 @@ const WalletDashboard = () => {
               </IconButton> */}
             </Box>
             <Typography
-                variant="body2"
-                align="left"
-                sx={{ color: "white" }}
+               className="white-text"
               >
-                Account Number: {primaryWallet.accountNumber}
+                Account Number : {primaryWallet.accountNumber}
               </Typography>
            <Typography
-                variant="body2"
-                align="left"
-                sx={{ color: "white" }}
+                className="white-text"
               >
-                Bank Name: {primaryWallet.bankName}
+                Bank Name : {primaryWallet.bankName}
               </Typography>
-            <Typography variant="body2" align="left" sx={{ color: "white" }}>
-              Balance: ₹ {primaryWallet.balance} 
+            <Typography className="white-text">
+              Balance : ₹ {primaryWallet.balance} 
             </Typography>
           </CardContent>
         </CardActionArea>
-        <CardActions className="wallet-card-actions">
-          <Button
-            size="medium"
-            color="primary"
-            className="add-wallet-btn"
-           onClick={() => {
-             goToWallet(primaryWallet.walletId)
-            }}
-          >
-            Add Money
-          </Button>
-        </CardActions>
+        
       </Card>
       ) : (
         <Typography variant="subtitle1" sx={{ mb: 4 }}>
@@ -271,9 +254,7 @@ const WalletDashboard = () => {
               }}
             >
               <Typography
-                variant="body2"
-                align="left"
-                sx={{ color: "white" }}
+               className="white-text"
               >
                 Wallet Id: {wallet.walletId}
               </Typography>
@@ -292,20 +273,17 @@ const WalletDashboard = () => {
               </IconButton> */}
             </Box>
             <Typography
-                variant="body2"
-                align="left"
-                sx={{ color: "white" }}
+                className="white-text"
               >
                 Account Number: {wallet.accountNumber}
               </Typography>
            <Typography
-                variant="body2"
-                align="left"
-                sx={{ color: "white" }}
+                className="white-text"
               >
                 Bank Name: {wallet.bankName}
               </Typography>
-            <Typography variant="body2" align="left" sx={{ color: "white" }}>
+            <Typography 
+            className="white-text">
               Balance: ₹ {wallet.balance}
             </Typography>
           </CardContent>
@@ -313,7 +291,7 @@ const WalletDashboard = () => {
         <CardActions className="wallet-card-actions">
           <Button
             size="medium"
-            color="primary"
+            color="primary" fontFamily=""
             className="add-wallet-btn"
                 onClick={() => setPrimaryWalletHandler(wallet.walletId)}
           >
@@ -334,7 +312,8 @@ const WalletDashboard = () => {
         <Alert
           onClose={() => setAlert({ ...alert, open: false })}
           severity={alert.severity}
-          sx={{ width: "100%" ,backgroundColor:"#009227ff", color:"#ffff"}}
+          sx={{ width: "100%" ,backgroundColor:alert.severity === "success" ? "#4caf50" : "#d32f2f", 
+            color:"#ffff"}}
         >
           {alert.message}
         </Alert>

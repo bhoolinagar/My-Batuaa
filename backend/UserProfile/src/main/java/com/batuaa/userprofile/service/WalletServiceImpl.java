@@ -20,6 +20,7 @@ import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -106,6 +107,10 @@ public class WalletServiceImpl implements WalletService {
             walletObj.setBuyer(buyer);
             walletObj.setCreatedAt(LocalDateTime.now());
 
+            List<Wallet> walletList= walletRepository.findByBuyerEmailId(wallet.getEmailId());
+            if(walletList.isEmpty()){
+                walletObj.setPrimary(true);
+            }
             // Step 5: Save wallet
             walletRepository.save(walletObj);
             log.info("Wallet successfully linked with ID: {}", walletId);
@@ -171,6 +176,7 @@ public class WalletServiceImpl implements WalletService {
                 .orElseThrow(() -> new BuyerNotFoundException("Buyer not found"));
 
         List<Wallet> wallets = walletRepository.findAllByBuyer(buyer);
+        wallets=  wallets.stream().filter(wallet -> !wallet.getPrimary()).collect(Collectors.toList());
         if (wallets.isEmpty()) {
             throw new WalletNotFoundException("No wallets found for this buyer");
         }

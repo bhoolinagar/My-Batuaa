@@ -97,7 +97,6 @@ export default function PrimaryWallet(props) {
         setPrimaryWallet(null);
       }
     };
-
     fetchPrimaryWallet();
   }, [buyerEmail, token, navigate]); // dependencies
 
@@ -107,8 +106,7 @@ export default function PrimaryWallet(props) {
 return (
 <div >
     <Box className="wallet-list-container">
- <Card
-
+{primaryWallet?( <Card
         sx={{
           maxWidth: 345,
           color: "#0F3A6E",
@@ -116,7 +114,6 @@ return (
           boxShadow: 3,
           borderColor: "#9828a2ff",
           borderBlockColor: "#ba357cff",
-
         }}
       >
         <CardActionArea sx={{ backgroundColor: "#0F3A6E" }}>
@@ -130,7 +127,7 @@ return (
             >
               Wallet
             </Typography>
-            <Typography variant="body2" align="left" sx={{ color: "white" }}>
+            <Typography  className="white-text">
               Email : {buyerEmail}
             </Typography>
             <Box
@@ -142,16 +139,15 @@ return (
               }}
             >
               <Typography
-                variant="body2"
-                align="left"
-                sx={{ color: "white" }}
+                className="white-text"
               >
                 Wallet Id : {primaryWallet?.walletId|| "N/A"}
               </Typography>
 
               <ClipboardWithIcon valueToCopy={primaryWallet?.walletId||"N/A"} />
             </Box>
-            <Typography variant="body2" align="left" sx={{ color: "white" }}>
+            <Typography 
+             className="white-text">
               Balance :  ₹ {primaryWallet?.balance||0}
             </Typography>
           </CardContent>
@@ -169,9 +165,16 @@ return (
             Add Money
           </Button>
         </CardActions>
-      </Card>
+      </Card>):(
+        <Card className="wallet-card"sx={{borderRadius:4 ,width:270, height:190}}>
+          <CardContent sx={{ margin:'20%'}}>
+            <Typography variant="h5">No Wallet found</Typography>
+          </CardContent>
+        </Card>
 
-   <Card className="wallet-card" sx={{borderRadius:4 ,width:270}}>
+)}
+
+   <Card className="wallet-card" sx={{borderRadius:4 ,width:270, }}>
       <CardActionArea>
         <img src={walletLogo} alt="Wallet" className="wallet-image" />
       </CardActionArea>
